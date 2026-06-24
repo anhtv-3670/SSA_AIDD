@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Đăng nhập" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Chào mừng trở lại. Vui lòng đăng nhập để tiếp tục.
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]: Email
+        - textbox "Email" [ref=e10]:
+          - /placeholder: you@example.com
+      - generic [ref=e11]:
+        - generic [ref=e12]: Mật khẩu
+        - textbox "Mật khẩu" [ref=e13]
+      - button "Đăng nhập" [ref=e14]
+    - generic [ref=e17]: hoặc
+    - generic [ref=e19]:
+      - button "Tiếp tục với Google" [ref=e21]
+      - button "Tiếp tục với GitHub" [ref=e23]
+    - paragraph [ref=e24]:
+      - text: Chưa có tài khoản?
+      - link "Đăng ký" [ref=e25] [cursor=pointer]:
+        - /url: /signup
+  - button "Open Next.js Dev Tools" [ref=e31] [cursor=pointer]:
+    - img [ref=e32]

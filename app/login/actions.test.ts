@@ -147,7 +147,7 @@ describe("signInWithPassword", () => {
         if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
       }
 
-      expect(mockRedirect).toHaveBeenCalledWith("/");
+      expect(mockRedirect).toHaveBeenCalledWith("/home");
     });
 
     it("returns error message on authentication failure", async () => {
@@ -353,7 +353,7 @@ describe("signInWithOAuth", () => {
 
       expect(mockSignInWithOAuth).toHaveBeenCalledWith({
         provider: "google",
-        options: { redirectTo: "https://example.com/auth/callback" },
+        options: { redirectTo: "https://example.com/auth/callback?next=%2Fhome" },
       });
     });
 
@@ -377,7 +377,7 @@ describe("signInWithOAuth", () => {
 
       expect(mockSignInWithOAuth).toHaveBeenCalledWith({
         provider: "github",
-        options: { redirectTo: "http://localhost:3000/auth/callback" },
+        options: { redirectTo: "http://localhost:3000/auth/callback?next=%2Fhome" },
       });
     });
 

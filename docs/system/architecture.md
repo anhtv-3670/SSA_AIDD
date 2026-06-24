@@ -42,6 +42,18 @@ Browser ──> proxy.ts (làm mới session mỗi request)
 | OAuth callback | `app/auth/callback/route.ts` | Đổi `code` (PKCE) lấy session; bảo vệ open-redirect qua `next` param. |
 | Validation schema | `lib/validation/auth-schema.ts` | Schema Zod cho form đăng nhập; trim email trước khi validate. |
 
+## Tầng locale (Locale Layer)
+
+Tách biệt rõ giữa client-safe và server-only:
+
+| Module | Vị trí | Phạm vi | Vai trò |
+|--------|--------|---------|---------|
+| Locale constants/types | `lib/locale.ts` | client + server | `Locale` type, `LOCALE_COOKIE`, `DEFAULT_LOCALE`, `LOCALES`, `parseLocale`, `localeOption` — không import `next/headers`. |
+| Locale server reader | `lib/get-locale.ts` | server-only | `getLocale()` đọc cookie qua `next/headers`; không gọi từ Client Component. |
+| Language selector | `components/language-selector.tsx` | client | `"use client"` — quản lý state open/locale, ghi cookie, roving-focus a11y. |
+
+Server Component (header) gọi `getLocale()` → truyền `initialLocale` vào `<LanguageSelector>` để SSR và client hydrate khớp nhau (tránh nhấp nháy). Phạm vi tính năng: **chỉ UI + cookie persistence** — chưa dịch nội dung trang.
+
 ## Quyết định kiến trúc (ADR tóm tắt)
 
 - **ADR: Dùng `@supabase/ssr` thay vì tự quản session JWT.** Lý do: bảo mật cookie chuẩn, hỗ trợ

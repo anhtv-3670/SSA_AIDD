@@ -11,6 +11,9 @@ import { loginSchema, type LoginFormState } from "@/lib/validation/auth-schema";
 const SUPPORTED_OAUTH_PROVIDERS = ["google", "github"] as const;
 type SupportedProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number];
 
+// Where a successful login lands. /home is the authenticated landing page.
+const POST_LOGIN_REDIRECT = "/home";
+
 function isSupportedProvider(value: string): value is SupportedProvider {
   return (SUPPORTED_OAUTH_PROVIDERS as readonly string[]).includes(value);
 }
@@ -69,7 +72,7 @@ export async function signInWithPassword(
     return { error: "Email hoặc mật khẩu không đúng.", email: rawEmail };
   }
 
-  redirect("/");
+  redirect(POST_LOGIN_REDIRECT);
 }
 
 /**
@@ -88,7 +91,9 @@ export async function signInWithOAuth(formData: FormData): Promise<void> {
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: provider as Provider,
-    options: { redirectTo: `${origin}/auth/callback` },
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(POST_LOGIN_REDIRECT)}`,
+    },
   });
 
   if (error || !data?.url) {

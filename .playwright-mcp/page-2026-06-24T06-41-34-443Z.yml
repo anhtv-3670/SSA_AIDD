@@ -1,0 +1,13 @@
+- generic [ref=e2]:
+  - button [ref=e3] [cursor=pointer]:
+    - img [ref=e4]
+    - img [ref=e5]
+  - list [ref=e7]:
+    - listitem [ref=e8]:
+      - button "VN" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - generic [ref=e11]: VN
+    - listitem [ref=e12]:
+      - button "EN" [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+        - generic [ref=e15]: EN

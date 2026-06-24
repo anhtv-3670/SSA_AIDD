@@ -9,3 +9,6 @@ lang: vi
 | Code | Tên | Type | Language | Workspace | Priority |
 |------|-----|------|----------|-----------|----------|
 | F001 | Login Page | UI + Auth | vi | web | high |
+| F002 | Home Page | UI + Auth | vi | web | high |
+| F003 | Award System (Hệ thống giải) | UI + Auth | vi | web | high |
+| F004 | Language Selector (Dropdown ngôn ngữ) | UI | vi | web | medium |

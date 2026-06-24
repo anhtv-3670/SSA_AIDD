@@ -37,10 +37,10 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Signed-in users have no business on /login.
+  // Signed-in users have no business on /login — send them to the home landing.
   if (user && request.nextUrl.pathname === "/login") {
     const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = "/";
+    homeUrl.pathname = "/home";
     return NextResponse.redirect(homeUrl);
   }
 
