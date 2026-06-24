@@ -7,7 +7,6 @@ import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE,
   type Locale,
-  type LocaleOption,
 } from "./locale";
 
 describe("parseLocale", () => {

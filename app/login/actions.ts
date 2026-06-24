@@ -2,11 +2,9 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import type { Provider } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/server";
-import { loginSchema, type LoginFormState } from "@/lib/validation/auth-schema";
 
 const SUPPORTED_OAUTH_PROVIDERS = ["google", "github"] as const;
 type SupportedProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number];
@@ -35,44 +33,17 @@ async function resolveOrigin(): Promise<string> {
   }
 
   const host = hdrs.get("host");
-  if (host) return `http://${host}`;
+  if (host) {
+    // Honor x-forwarded-proto when present; otherwise infer — only loopback hosts
+    // are http, everything else defaults to https so prod callback URLs aren't
+    // built as http:// (which Supabase would reject).
+    const proto =
+      hdrs.get("x-forwarded-proto") ??
+      (/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host) ? "http" : "https");
+    return `${proto}://${host}`;
+  }
 
   return "http://localhost:3000";
-}
-
-/**
- * Email + password login. Validates input, then calls Supabase. Returns a
- * friendly `LoginFormState` on failure (no leak of which credential was wrong);
- * redirects home on success.
- */
-export async function signInWithPassword(
-  _prevState: LoginFormState,
-  formData: FormData,
-): Promise<LoginFormState> {
-  const rawEmail = String(formData.get("email") ?? "");
-  const parsed = loginSchema.safeParse({
-    email: rawEmail,
-    password: String(formData.get("password") ?? ""),
-  });
-
-  if (!parsed.success) {
-    return {
-      fieldErrors: z.flattenError(parsed.error).fieldErrors,
-      email: rawEmail,
-    };
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  });
-
-  if (error) {
-    return { error: "Email hoặc mật khẩu không đúng.", email: rawEmail };
-  }
-
-  redirect(POST_LOGIN_REDIRECT);
 }
 
 /**

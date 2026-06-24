@@ -12,3 +12,4 @@ lang: vi
 | F002 | Home Page | UI + Auth | vi | web | high |
 | F003 | Award System (Hệ thống giải) | UI + Auth | vi | web | high |
 | F004 | Language Selector (Dropdown ngôn ngữ) | UI | vi | web | medium |
+| F005 | Sun* Kudos Live Board (Bảng ghi nhận) | UI | vi | web | high |

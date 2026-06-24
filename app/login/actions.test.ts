@@ -24,7 +24,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 // Now import after mocks are set up
-import { signInWithPassword, signInWithOAuth, signOut } from "./actions";
+import { signInWithOAuth, signOut } from "./actions";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
@@ -36,194 +36,16 @@ const mockCreateClient = vi.mocked(createClient);
 type SupabaseClientMock = Awaited<ReturnType<typeof createClient>>;
 type HeadersReturn = ReturnType<typeof headers>;
 
-let mockSignInWithPassword: Mock;
 let mockSignInWithOAuth: Mock;
 let mockSignOut: Mock;
-
-describe("signInWithPassword", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockSignInWithPassword = vi.fn();
-    mockSignInWithOAuth = vi.fn();
-    mockSignOut = vi.fn();
-    mockCreateClient.mockResolvedValue({
-      auth: {
-        signInWithPassword: mockSignInWithPassword,
-        signInWithOAuth: mockSignInWithOAuth,
-        signOut: mockSignOut,
-      },
-    } as unknown as SupabaseClientMock);
-    mockRedirect.mockImplementation(() => {
-      throw new Error("REDIRECT_SENTINEL");
-    });
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
-  describe("validation", () => {
-    it("rejects invalid email and returns fieldErrors", async () => {
-      const formData = new FormData();
-      formData.append("email", "not-an-email");
-      formData.append("password", "password123");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result).toBeDefined();
-      expect(result?.fieldErrors).toBeDefined();
-      expect(result?.fieldErrors?.email).toContain("Email không hợp lệ.");
-      expect(result?.email).toBe("not-an-email");
-      expect(mockSignInWithPassword).not.toHaveBeenCalled();
-    });
-
-    it("rejects empty password and returns fieldErrors", async () => {
-      const formData = new FormData();
-      formData.append("email", "user@example.com");
-      formData.append("password", "");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result).toBeDefined();
-      expect(result?.fieldErrors).toBeDefined();
-      expect(result?.fieldErrors?.password).toContain("Vui lòng nhập mật khẩu.");
-      expect(result?.email).toBe("user@example.com");
-      expect(mockSignInWithPassword).not.toHaveBeenCalled();
-    });
-
-    it("rejects both invalid email and empty password", async () => {
-      const formData = new FormData();
-      formData.append("email", "invalid");
-      formData.append("password", "");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result?.fieldErrors?.email).toBeDefined();
-      expect(result?.fieldErrors?.password).toBeDefined();
-      expect(mockSignInWithPassword).not.toHaveBeenCalled();
-    });
-
-    it("preserves original email in response even if invalid", async () => {
-      const formData = new FormData();
-      formData.append("email", "  invalid.email  ");
-      formData.append("password", "password");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result?.email).toBe("  invalid.email  ");
-    });
-  });
-
-  describe("Supabase authentication", () => {
-    it("calls Supabase signInWithPassword with valid input", async () => {
-      mockSignInWithPassword.mockResolvedValue({ error: null });
-
-      const formData = new FormData();
-      formData.append("email", "user@example.com");
-      formData.append("password", "correctpassword");
-
-      try {
-        await signInWithPassword(undefined, formData);
-      } catch (err) {
-        if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
-      }
-
-      expect(mockSignInWithPassword).toHaveBeenCalledWith({
-        email: "user@example.com",
-        password: "correctpassword",
-      });
-    });
-
-    it("redirects to / on successful authentication", async () => {
-      mockSignInWithPassword.mockResolvedValue({ error: null });
-
-      const formData = new FormData();
-      formData.append("email", "user@example.com");
-      formData.append("password", "correctpassword");
-
-      try {
-        await signInWithPassword(undefined, formData);
-      } catch (err) {
-        if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
-      }
-
-      expect(mockRedirect).toHaveBeenCalledWith("/home");
-    });
-
-    it("returns error message on authentication failure", async () => {
-      mockSignInWithPassword.mockResolvedValue({
-        error: new Error("Invalid credentials"),
-      });
-
-      const formData = new FormData();
-      formData.append("email", "user@example.com");
-      formData.append("password", "wrongpassword");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result?.error).toBe("Email hoặc mật khẩu không đúng.");
-      expect(result?.email).toBe("user@example.com");
-      expect(mockRedirect).not.toHaveBeenCalled();
-    });
-
-    it("returns friendly error message even for different error types", async () => {
-      mockSignInWithPassword.mockResolvedValue({
-        error: new Error("User not found"),
-      });
-
-      const formData = new FormData();
-      formData.append("email", "nonexistent@example.com");
-      formData.append("password", "anypassword");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result?.error).toBe("Email hoặc mật khẩu không đúng.");
-      expect(mockRedirect).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("missing/undefined FormData values", () => {
-    it("handles missing email field", async () => {
-      const formData = new FormData();
-      formData.append("password", "password123");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result?.fieldErrors?.email).toBeDefined();
-      expect(mockSignInWithPassword).not.toHaveBeenCalled();
-    });
-
-    it("handles missing password field", async () => {
-      const formData = new FormData();
-      formData.append("email", "user@example.com");
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result?.fieldErrors?.password).toBeDefined();
-      expect(mockSignInWithPassword).not.toHaveBeenCalled();
-    });
-
-    it("handles both fields missing", async () => {
-      const formData = new FormData();
-
-      const result = await signInWithPassword(undefined, formData);
-
-      expect(result?.fieldErrors?.email).toBeDefined();
-      expect(result?.fieldErrors?.password).toBeDefined();
-      expect(mockSignInWithPassword).not.toHaveBeenCalled();
-    });
-  });
-});
 
 describe("signInWithOAuth", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSignInWithPassword = vi.fn();
     mockSignInWithOAuth = vi.fn();
     mockSignOut = vi.fn();
     mockCreateClient.mockResolvedValue({
       auth: {
-        signInWithPassword: mockSignInWithPassword,
         signInWithOAuth: mockSignInWithOAuth,
         signOut: mockSignOut,
       },
@@ -381,6 +203,56 @@ describe("signInWithOAuth", () => {
       });
     });
 
+    it("infers https for a non-localhost host header (no origin/x-forwarded)", async () => {
+      // M-2: the Host-branch must not hardcode http:// for production domains.
+      mockHeaders.mockReturnValue({
+        get: (key: string) => (key === "host" ? "prod.example.com" : null),
+      } as unknown as HeadersReturn);
+      mockSignInWithOAuth.mockResolvedValue({
+        data: { url: "https://oauth.provider.com/authorize" },
+        error: null,
+      });
+
+      const formData = new FormData();
+      formData.append("provider", "google");
+
+      try {
+        await signInWithOAuth(formData);
+      } catch (err) {
+        if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
+      }
+
+      expect(mockSignInWithOAuth).toHaveBeenCalledWith({
+        provider: "google",
+        options: { redirectTo: "https://prod.example.com/auth/callback?next=%2Fhome" },
+      });
+    });
+
+    it("honors x-forwarded-proto over host inference", async () => {
+      mockHeaders.mockReturnValue({
+        get: (key: string) =>
+          key === "host" ? "prod.example.com" : key === "x-forwarded-proto" ? "https" : null,
+      } as unknown as HeadersReturn);
+      mockSignInWithOAuth.mockResolvedValue({
+        data: { url: "https://oauth.provider.com/authorize" },
+        error: null,
+      });
+
+      const formData = new FormData();
+      formData.append("provider", "google");
+
+      try {
+        await signInWithOAuth(formData);
+      } catch (err) {
+        if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
+      }
+
+      expect(mockSignInWithOAuth).toHaveBeenCalledWith({
+        provider: "google",
+        options: { redirectTo: "https://prod.example.com/auth/callback?next=%2Fhome" },
+      });
+    });
+
     it("redirects to provider URL on success", async () => {
       const providerUrl = "https://oauth.provider.com/authorize?code=abc123";
       mockSignInWithOAuth.mockResolvedValue({
@@ -477,12 +349,10 @@ describe("signInWithOAuth", () => {
 describe("signOut", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSignInWithPassword = vi.fn();
     mockSignInWithOAuth = vi.fn();
     mockSignOut = vi.fn();
     mockCreateClient.mockResolvedValue({
       auth: {
-        signInWithPassword: mockSignInWithPassword,
         signInWithOAuth: mockSignInWithOAuth,
         signOut: mockSignOut,
       },

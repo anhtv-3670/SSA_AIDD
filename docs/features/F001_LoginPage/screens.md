@@ -1,56 +1,24 @@
----
-status: implemented
-authored_by: takumi
-created: 2026-06-23
-fcode: F001
-lang: vi
----
+# F001 — Screens
 
-# F001_LoginPage — Screens
+## SCR-login (MoMorph `GzbNeVGJHz`, node 662:14387)
+Dark base `#00101A`, full-bleed feather hero, gold `#FFEA9E`. Full-viewport (no app chrome reuse beyond LanguageSelector + footer text).
 
-## Screen List
+### A — Header (mms_A, 662:14391)
+- 1440×80, padding 12px 144px, bg `rgba(11,15,18,0.8)`, row space-between.
+- A.1 Logo (left): reuse `/saa-2025/logo-sun.png` ("Sun* Annual Awards 2025" lockup).
+- A.2 Language (right): reuse F004 `<LanguageSelector>` (VN/EN). Server reads cookie via `getLocale()`.
 
-| Code | Tên | Route | Mô tả |
-|------|-----|-------|-------|
-| SCR-login | Đăng nhập | `/login` | Form email/mật khẩu + nút OAuth (Google, GitHub), link tới `/signup`. |
+### B — Bìa / main (mms_B, 662:14393)
+- B.1 Key Visual (662:14395): full-bleed `/home-saa/hero-swirl.png`, dark base, cover gradient overlay (same as home-hero: `linear-gradient(12deg,#00101A 23.7%,...)`).
+- Content column (Frame 487 → Frame 550, 662:14755): starts x≈144, col.
+  - ROOT FURTHER wordmark: large Montserrat styled text, cream/white both lines (per design), letterSpacing tight. (home-hero renders gold 2nd line; here both cream — match design.)
+  - Frame 550 (gap 24px, width 496px): 
+    - Subtitle (662:14753): "Bắt đầu hành trình của bạn cùng SAA 2025." + "Đăng nhập để khám phá!" — Montserrat 700 ~20px white, 2 lines.
+    - B.3 Login button (662:14425, 305×60): gold `#FFEA9E` bg, dark text "LOGIN With Google" + Google "G" logo, radius ~8px. Wires to `signInWithOAuth('google')` (server-action form). Hover: subtle.
 
-> Nguồn thiết kế: MoMorph screen `GzbNeVGJHz` (fileKey `9ypp4enmFmdK3YAFJLIu6C`).
-> UI hiện thực ở giai đoạn này là **tạm thời** — giá trị thị giác (màu, font, spacing, layout chi tiết)
-> sẽ đối chiếu với thiết kế MoMorph khi MCP đọc được. KHÔNG đoán giá trị pixel.
+### D — Footer (mms_D, 662:14447)
+- Centered "Bản quyền thuộc về Sun* © 2025" (Montserrat 700 16px white) on dark, top border `#2E3940`. Minimal — no nav/logo.
 
-### SCR-login — thành phần (tạm thời)
-
-- Tiêu đề "Đăng nhập" + mô tả chào mừng.
-- Trường Email (`type=email`, required, giữ lại giá trị khi lỗi).
-- Trường Mật khẩu (`type=password`, required).
-- Nút "Đăng nhập" (submit, disabled khi pending, hiển thị "Đang đăng nhập…").
-- Vùng thông báo lỗi chung (`role="alert"`, `aria-live="polite"`) — theo `useActionState`.
-- Thông báo lỗi per-field dưới mỗi input (`aria-live="polite"`).
-- Divider "hoặc".
-- Nút "Tiếp tục với Google", "Tiếp tục với GitHub" (Server Component — mỗi nút là một `<form>`).
-- Link "Chưa có tài khoản? Đăng ký" → `/signup` (chưa hiện thực).
-
-### UI States
-
-- **idle**: form trống, sẵn sàng nhập.
-- **pending**: đang gửi — nút disabled, hiển thị "Đang đăng nhập…".
-- **error**: hiển thị thông báo lỗi, giữ lại email đã nhập.
-- **success**: điều hướng tới `/` (không có trạng thái hiển thị riêng).
-
-### Validation & Error Feedback
-
-| Tình huống | Thông báo |
-|-----------|-----------|
-| Email sai định dạng (sau trim) | "Email không hợp lệ." |
-| Mật khẩu rỗng | "Vui lòng nhập mật khẩu." |
-| Sai thông tin đăng nhập (Supabase) | "Email hoặc mật khẩu không đúng." |
-| OAuth thất bại (`?error=oauth`) | "Đăng nhập bằng nhà cung cấp thất bại. Vui lòng thử lại." |
-| Lỗi khác | "Đã có lỗi xảy ra. Vui lòng thử lại." |
-
-## User Journey
-
-`/login` → (email/password submit | OAuth click) → server xác thực →
-thành công: set cookie phiên → redirect `/` · thất bại: ở lại `/login` kèm thông báo lỗi.
-
-Luồng OAuth có thêm bước: provider → `/auth/callback?code=...` → đổi code lấy session → redirect `/`.
-Nếu OAuth bị hủy hoặc callback thiếu `code` → redirect `/login?error=oauth`.
+### States
+- Already authenticated → redirect `/home`.
+- OAuth error (`?error=oauth`) → show a small error message above/near the button.

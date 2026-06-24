@@ -1,29 +1,23 @@
----
-status: implemented
-authored_by: takumi
-created: 2026-06-23
-fcode: F001
-lang: vi
----
+# F001 — Login Page (re-implementation)
 
-# F001_LoginPage — Business Context
+## Mục đích
+Trang `/login` — cổng vào SAA 2025. Re-implement UI theo thiết kế MoMorph `GzbNeVGJHz` (trước đây UI tạm, backend auth là final). Thiết kế mới: **chỉ đăng nhập bằng Google**, hero "ROOT FURTHER" full-bleed.
 
-## Why It Matters
+## Thay đổi trọng yếu so với bản tạm
+- **Chỉ Google login** — bỏ form email/mật khẩu, bỏ nút GitHub, bỏ link "Đăng ký".
+- **Xoá unused** (theo quyết định): action `signInWithPassword`, `lib/validation/auth-schema.ts`, `login-form.tsx`, và toàn bộ test của chúng (~40 test). Giữ `signInWithOAuth` + `signOut` (+ test) — backend OAuth là final.
+- UI mới: dark base, hero swirl bg, wordmark ROOT FURTHER (styled text), subtitle, 1 nút "LOGIN With Google", header tối giản (logo + chọn ngôn ngữ), footer bản quyền.
 
-Xác thực là cánh cổng của ứng dụng: không có đăng nhập thì không thể có nội dung cá nhân hóa,
-dữ liệu riêng tư hay phân quyền. `/login` là điểm chạm đầu tiên với người dùng quay lại và là
-nền tảng để xây các tính năng yêu cầu danh tính sau này. Dùng Supabase giúp giảm rủi ro tự xây
-hệ thống mật khẩu/phiên và tận dụng OAuth sẵn có.
+## Người dùng & giá trị
+- Sunner chưa đăng nhập. Đã đăng nhập → redirect `/home` (nhất quán với `POST_LOGIN_REDIRECT`).
+- Giá trị: một đường đăng nhập duy nhất, rõ ràng (Google SSO).
 
-## Who Uses It
+## Phạm vi
+- **Trong:** UI trang login theo design + wire nút Google vào `signInWithOAuth('google')`; header (logo + LanguageSelector F004); footer copyright.
+- **Ngoài:** thay đổi luồng OAuth backend (giữ nguyên), trang `/signup` (bỏ link, không xoá route nếu có), đa ngôn ngữ nội dung.
 
-- **Khách truy cập đã có tài khoản**: nhập email/mật khẩu hoặc OAuth để vào lại.
-- **Người dùng ưa OAuth**: đăng nhập nhanh bằng Google/GitHub, không cần mật khẩu riêng.
+## Nguồn thiết kế
+MoMorph `GzbNeVGJHz` (node 662:14387). Header A / Bìa B (KeyVisual B.1, Frame 550: subtitle + Login button B.3) / Footer D.
 
-## What They Do
-
-1. Mở `/login`.
-2. Hoặc nhập email + mật khẩu rồi bấm "Đăng nhập"; hoặc bấm nút "Tiếp tục với Google/GitHub".
-3. Nếu thành công → có phiên và được đưa về trang chủ (`/`).
-4. Nếu sai thông tin → thấy thông báo lỗi rõ ràng và thử lại (email đã nhập được giữ lại).
-5. Khi muốn kết thúc, người dùng đăng xuất để xóa phiên và về `/login`.
+## Quyết định (xem clarifications.md)
+- Google-only everything (xoá email/password path + test). ROOT FURTHER = styled text (như home-hero).

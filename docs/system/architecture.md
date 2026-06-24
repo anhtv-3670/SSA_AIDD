@@ -19,11 +19,11 @@ sẽ mở rộng khi thêm tính năng.
 ```
 Browser ──> proxy.ts (làm mới session mỗi request)
    │
-   ├─ /login (Server Component) ── LoginForm (Client) ──> Server Actions (signInWithPassword / signInWithOAuth)
-   │                                                          │
-   │                                                          └─> Supabase Auth (local @ 127.0.0.1:54321)
+   ├─ /login (Server Component) ── GoogleLoginButton (Server form) ──> Server Action (signInWithOAuth)
+   │                                                                        │
+   │                                                                        └─> Supabase Auth (local @ 127.0.0.1:54321)
    │
-   └─ /auth/callback (Route Handler) ──> exchangeCodeForSession ──> redirect /
+   └─ /auth/callback (Route Handler) ──> exchangeCodeForSession ──> redirect /home
 ```
 
 ### Thành phần
@@ -33,14 +33,29 @@ Browser ──> proxy.ts (làm mới session mỗi request)
 | Env helper | `lib/supabase/env.ts` | Đọc và validate biến môi trường Supabase; ném lỗi rõ ràng nếu thiếu (fail fast). |
 | Browser client | `lib/supabase/client.ts` | `createBrowserClient` cho Client Component (chỉ anon key). |
 | Server client | `lib/supabase/server.ts` | `createServerClient` gắn với cookies của Next (`await cookies()`). |
-| Proxy client | `lib/supabase/proxy.ts` | Làm mới session trong `proxy.ts`, ghi cookie ra response. Cũng redirect `/login` → `/` cho user đã đăng nhập. |
+| Proxy client | `lib/supabase/proxy.ts` | Làm mới session trong `proxy.ts`, ghi cookie ra response. Redirect `/login` → `/home` cho user đã đăng nhập. |
 | Proxy (middleware) | `proxy.ts` (root) | Chạy `updateSession` mỗi request — **Next.js 16 đổi tên Middleware → Proxy**. |
-| Auth actions | `app/login/actions.ts` | Server Actions: đăng nhập email/mật khẩu, OAuth, đăng xuất. |
-| Trang đăng nhập | `app/login/page.tsx` | Server Component; redirect về `/` nếu đã đăng nhập. |
-| Form đăng nhập | `app/login/login-form.tsx` | Client Component; dùng `useActionState`. |
-| Nút OAuth | `app/login/oauth-buttons.tsx` | Server Component; mỗi provider là một `<form>` gọi `signInWithOAuth`. |
+| Auth actions | `app/login/actions.ts` | Server Actions: `signInWithOAuth` (Google/GitHub allowlist) + `signOut`. Email/password path đã gỡ (F001 re-implement). |
+| Trang đăng nhập | `app/login/page.tsx` | Server Component; redirect về `/home` nếu đã đăng nhập. |
+| Google login button | `app/login/google-login-button.tsx` | Server Component form → `signInWithOAuth('google')`; gold button + Google G SVG. |
+| Login header | `app/login/login-header.tsx` | Logo `/saa-2025/logo-sun.png` + `<LanguageSelector>`. |
+| Login footer | `app/login/login-footer.tsx` | Copyright footer tối giản. |
 | OAuth callback | `app/auth/callback/route.ts` | Đổi `code` (PKCE) lấy session; bảo vệ open-redirect qua `next` param. |
-| Validation schema | `lib/validation/auth-schema.ts` | Schema Zod cho form đăng nhập; trim email trước khi validate. |
+
+## Mẫu trang được bảo vệ (Guarded-Page Pattern)
+
+Ba route `/home`, `/he-thong-giai`, và `/sun-kudos` dùng chung cùng một mẫu Server Component:
+
+```
+page.tsx (Server Component)
+  createClient() → getUser() → nếu chưa đăng nhập → redirect "/login"
+  getLocale()
+  render <SiteHeader active={…} locale={locale} />
+  render <SiteFooter />
+  render nội dung trang (Server hoặc Client Component)
+```
+
+Khi thêm route mới cần xác thực, sao chép mẫu này — không tạo middleware riêng cho từng trang.
 
 ## Tầng locale (Locale Layer)
 
