@@ -13,3 +13,6 @@ lang: vi
 | F003 | Award System (Hệ thống giải) | UI + Auth | vi | web | high |
 | F004 | Language Selector (Dropdown ngôn ngữ) | UI | vi | web | medium |
 | F005 | Sun* Kudos Live Board (Bảng ghi nhận) | UI | vi | web | high |
+| F006 | Write Kudo modal (Viết Kudo) | UI | vi | web | high |
+| F007 | Personal Profile (Profile bản thân) | UI | vi | web | medium |
+| F008 | Countdown Prelaunch page | UI | vi | web | medium |

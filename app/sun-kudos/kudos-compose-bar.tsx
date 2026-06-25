@@ -1,24 +1,27 @@
 "use client";
 
-// Authoritative: Button chuc nang (2940:13448)
-// A.1: 738x72px pill, border 1px #998C5F, bg rgba(255,234,158,0.10), radius 68px
-//   Pen icon + placeholder text Montserrat 700 16px white letterSpacing 0.15px
-// Search: 381x72px pill, search icon + placeholder "Tìm kiếm profile Sunner"
-// Both are plain search inputs (no send dialog per scope).
+// Compose bar — two pills side by side.
+// A.1 (738x72px): button-styled trigger — pencil icon + placeholder text, opens Write Kudo modal.
+//   Was previously an <input> that fed `query`. Per F006 integration spec, it no longer feeds
+//   query; it now calls onOpenWrite. The pill look (border #998C5F, radius 68px, bg translucent)
+//   is preserved exactly.
+// A.2 (381x72px): Sunner search input — still drives `query` for highlight/all filtering.
+// Authoritative design: Button chuc nang (2940:13448)
 
 import { useCallback } from "react";
 
 interface KudosComposeBarProps {
   query: string;
   onQueryChange: (val: string) => void;
+  onOpenWrite: () => void;
 }
 
-export function KudosComposeBar({ query, onQueryChange }: KudosComposeBarProps) {
-  const handleChange = useCallback(
+export function KudosComposeBar({ query, onQueryChange, onOpenWrite }: KudosComposeBarProps) {
+  const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       onQueryChange(e.target.value);
     },
-    [onQueryChange]
+    [onQueryChange],
   );
 
   return (
@@ -31,8 +34,11 @@ export function KudosComposeBar({ query, onQueryChange }: KudosComposeBarProps) 
         width: "100%",
       }}
     >
-      {/* A.1 — compose / search "gửi lời cảm ơn" */}
-      <label
+      {/* A.1 — Write Kudo trigger button (pill-styled, not an input) */}
+      <button
+        type="button"
+        onClick={onOpenWrite}
+        aria-label="Gửi lời cảm ơn và ghi nhận đến ai đó"
         style={{
           display: "flex",
           alignItems: "center",
@@ -44,7 +50,8 @@ export function KudosComposeBar({ query, onQueryChange }: KudosComposeBarProps) 
           background: "rgba(255,234,158,0.10)",
           padding: "24px 16px",
           flexShrink: 0,
-          cursor: "text",
+          cursor: "pointer",
+          textAlign: "left",
         }}
       >
         {/* Pencil icon */}
@@ -64,29 +71,25 @@ export function KudosComposeBar({ query, onQueryChange }: KudosComposeBarProps) 
             strokeLinejoin="round"
           />
         </svg>
-        <input
-          type="text"
-          value={query}
-          onChange={handleChange}
-          maxLength={100}
-          aria-label="Gửi lời cảm ơn"
-          placeholder="Hôm nay, bạn muốn gửi lời cảm ơn và ghi nhận đến ai?"
+        <span
           style={{
             flex: 1,
-            background: "transparent",
-            border: "none",
-            outline: "none",
             fontFamily: "Montserrat, sans-serif",
             fontSize: "16px",
             fontWeight: 700,
             lineHeight: "24px",
             letterSpacing: "0.15px",
-            color: "#FFFFFF",
+            color: "rgba(255,255,255,0.5)",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
-        />
-      </label>
+        >
+          Hôm nay, bạn muốn gửi lời cảm ơn và ghi nhận đến ai?
+        </span>
+      </button>
 
-      {/* Search Sunner — EC-11: maxLength 100 */}
+      {/* A.2 — Sunner search — EC-11: maxLength 100 */}
       <label
         style={{
           display: "flex",
@@ -110,7 +113,7 @@ export function KudosComposeBar({ query, onQueryChange }: KudosComposeBarProps) 
         <input
           type="text"
           value={query}
-          onChange={handleChange}
+          onChange={handleSearchChange}
           maxLength={100}
           aria-label="Tìm kiếm profile Sunner"
           placeholder="Tìm kiếm profile Sunner"

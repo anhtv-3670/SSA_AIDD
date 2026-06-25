@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e6]:
+      - paragraph [ref=e7]: Sự kiện sẽ bắt đầu sau
+      - timer "Còn 99 ngày 08 giờ 37 phút" [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - generic [ref=e12]: "9"
+            - generic [ref=e14]: "9"
+          - generic [ref=e15]: DAYS
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e19]: "0"
+            - generic [ref=e21]: "8"
+          - generic [ref=e22]: HOURS
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - generic [ref=e26]: "3"
+            - generic [ref=e28]: "7"
+          - generic [ref=e29]: MINUTES
+      - generic [ref=e30]: Còn 99 ngày 08 giờ 37 phút
+  - button "Open Next.js Dev Tools" [ref=e36] [cursor=pointer]:
+    - img [ref=e37]
+  - alert [ref=e40]

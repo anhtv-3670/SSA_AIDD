@@ -24,7 +24,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 // Now import after mocks are set up
-import { signInWithOAuth, signOut } from "./actions";
+import { signInWithOAuth, signOut, signInAsTestUser } from "./actions";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
@@ -400,5 +400,78 @@ describe("signOut", () => {
     }
 
     expect(mockRedirect).toHaveBeenCalledWith("/login");
+  });
+});
+
+describe("signInAsTestUser", () => {
+  let mockSignInWithPwd: Mock;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSignInWithPwd = vi.fn();
+    mockCreateClient.mockResolvedValue({
+      auth: { signInWithPassword: mockSignInWithPwd },
+    } as unknown as SupabaseClientMock);
+    mockRedirect.mockImplementation(() => {
+      throw new Error("REDIRECT_SENTINEL");
+    });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllEnvs();
+  });
+
+  it("is blocked (no sign-in) when test login is disabled", async () => {
+    vi.stubEnv("ENABLE_TEST_LOGIN", "");
+    try {
+      await signInAsTestUser();
+    } catch (err) {
+      if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
+    }
+    expect(mockSignInWithPwd).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith("/login");
+  });
+
+  it("is blocked in production even when the flag is set", async () => {
+    vi.stubEnv("ENABLE_TEST_LOGIN", "true");
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      await signInAsTestUser();
+    } catch (err) {
+      if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
+    }
+    expect(mockSignInWithPwd).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith("/login");
+  });
+
+  it("signs in the seeded user and redirects /home when enabled", async () => {
+    vi.stubEnv("ENABLE_TEST_LOGIN", "true");
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("TEST_USER_EMAIL", undefined);
+    vi.stubEnv("TEST_USER_PASSWORD", undefined);
+    mockSignInWithPwd.mockResolvedValue({ error: null });
+    try {
+      await signInAsTestUser();
+    } catch (err) {
+      if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
+    }
+    expect(mockSignInWithPwd).toHaveBeenCalledWith({
+      email: "test@example.com",
+      password: "password123",
+    });
+    expect(mockRedirect).toHaveBeenCalledWith("/home");
+  });
+
+  it("redirects to ?error=testlogin when Supabase rejects", async () => {
+    vi.stubEnv("ENABLE_TEST_LOGIN", "true");
+    vi.stubEnv("NODE_ENV", "development");
+    mockSignInWithPwd.mockResolvedValue({ error: new Error("invalid credentials") });
+    try {
+      await signInAsTestUser();
+    } catch (err) {
+      if ((err as Error).message !== "REDIRECT_SENTINEL") throw err;
+    }
+    expect(mockRedirect).toHaveBeenCalledWith("/login?error=testlogin");
   });
 });

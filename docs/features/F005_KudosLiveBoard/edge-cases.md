@@ -10,6 +10,7 @@
 | EC-6 | Carousel ở slide đầu/cuối | Nút ◀ / ▶ tương ứng disabled | spec B.5 |
 | EC-7 | Filter/search không khớp kết quả nào | Hiển thị empty-state; carousel page về 1 | clarification |
 | EC-8 | Copy Link khi `navigator.clipboard` không khả dụng | Bọc try/catch; toast vẫn hiển thị hoặc fail êm, không throw | EC robustness |
-| EC-9 | Click placeholder (Mở quà / Xem chi tiết / avatar / ảnh / node spotlight) | No-op an toàn, không lỗi JS, không điều hướng tới route 404 | clarification (deferred) |
+| EC-9 | Click placeholder (Mở quà / Xem chi tiết / ảnh / node spotlight) | No-op an toàn, không lỗi JS, không điều hướng tới route 404 | clarification (deferred) |
+| EC-12 | Click avatar / tên trong KudosCard | Điều hướng `/profile` (F007 wired — single page; per-user deferred) | F007 EC-7 |
 | EC-10 | JS tắt | Trang render tĩnh đầy đủ (SSR); tương tác suy biến, không lỗi | progressive enhancement |
 | EC-11 | Search "Tìm kiếm Sunner" > 100 ký tự | Giới hạn maxLength 100 (theo spec B.7.3) | spec B.7.3 |

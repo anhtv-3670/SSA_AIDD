@@ -44,7 +44,7 @@ Browser ──> proxy.ts (làm mới session mỗi request)
 
 ## Mẫu trang được bảo vệ (Guarded-Page Pattern)
 
-Ba route `/home`, `/he-thong-giai`, và `/sun-kudos` dùng chung cùng một mẫu Server Component:
+Bốn route `/home`, `/he-thong-giai`, `/sun-kudos`, và `/profile` dùng chung cùng một mẫu Server Component:
 
 ```
 page.tsx (Server Component)
@@ -56,6 +56,12 @@ page.tsx (Server Component)
 ```
 
 Khi thêm route mới cần xác thực, sao chép mẫu này — không tạo middleware riêng cho từng trang.
+
+## Route công khai (Public-Route Pattern)
+
+`/prelaunch` là route **không** dùng mẫu guarded-page: không có `getUser()`, không có `<SiteHeader>`/`<SiteFooter>`, không có auth redirect. Đây là trang standalone toàn màn hình phục vụ trước sự kiện (đếm ngược).
+
+Khi thêm route công khai mới: bỏ qua `getUser()` và chrome dùng chung — nhưng vẫn phải kiểm tra proxy không vô tình chặn route đó (`lib/supabase/proxy.ts` hiện chỉ redirect `/login`, không ảnh hưởng các route khác).
 
 ## Tầng locale (Locale Layer)
 
@@ -81,6 +87,14 @@ Server Component (header) gọi `getLocale()` → truyền `initialLocale` vào 
   reverse proxy thường không truyền header `Origin`; `X-Forwarded-Host` + `X-Forwarded-Proto` bù đắp.
   Xem `app/login/actions.ts#resolveOrigin`.
 
+## Font tự host (Self-hosted Fonts)
+
+Font `"Digital Numbers"` (kiểu LED 7-segment, dùng cho `/prelaunch`) được phục vụ nội bộ:
+- File: `public/fonts/digital-numbers/DigitalNumbers-Regular.woff`
+- Khai báo: `@font-face` trong `app/globals.css` với `font-display: swap`.
+
+Không phụ thuộc CDN ngoài — đảm bảo hiển thị nhất quán khi không có mạng hoặc CDN bị chặn.
+
 ## Biến môi trường
 
 | Biến | Mục đích |
@@ -91,5 +105,6 @@ Server Component (header) gọi `getLocale()` → truyền `initialLocale` vào 
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` | OAuth Google secret — tùy chọn. |
 | `SUPABASE_AUTH_EXTERNAL_GITHUB_CLIENT_ID` | OAuth GitHub — tùy chọn, chỉ cần khi bật GitHub login. |
 | `SUPABASE_AUTH_EXTERNAL_GITHUB_SECRET` | OAuth GitHub secret — tùy chọn. |
+| `NEXT_PUBLIC_EVENT_START_ISO` | Thời điểm bắt đầu sự kiện (ISO 8601), dùng cho cả `/prelaunch` (F008) và `/home` hero countdown (F002). Default: `2026-12-26T19:00:00+07:00`. Nếu không hợp lệ, countdown hiển thị `00/00/00/00`. |
 
 `service_role` key KHÔNG được dùng trong app này. Tham khảo `.env.example` để xem mẫu đầy đủ.

@@ -33,7 +33,9 @@
 - Copy Link: `navigator.clipboard.writeText(location.href)` + toast "Link copied — ready to share!" (simple toast util/state).
 - Filters + search: derive filtered lists from mock; filter resets carousel page to 1; empty → empty-state text.
 - Filter dropdown a11y: plain button menu (không phải listbox widget) — nút option focusable tự nhiên; trigger mở bằng ArrowUp/Down, roving focus qua các option, Escape đóng và trả focus về trigger.
-- Placeholders: "Mở Secret Box" disabled; avatars/names/"Xem chi tiết"/images/word-cloud nodes non-interactive (no href, no handler) — must not throw.
+- Placeholders: "Mở Secret Box" disabled; "Xem chi tiết"/images/word-cloud nodes non-interactive (no href, no handler) — must not throw.
+- **Profile wiring (F007):** avatars/names in `kudos-person-block.tsx` now wrapped in `<Link href="/profile">` (single profile page; per-user deferred). `components/site-header.tsx` user icon also links `/profile`.
+- **KudosCard `spam?` prop (F007):** additive optional boolean — renders red "Spam" badge top-right when true. Default `false`; all F005 usages unaffected.
 
 ## Assets
 - Hero bg: reuse `/home-saa/hero-swirl.png`. KUDOS wordmark: reuse `/saa-2025/kudos-logo.svg`.

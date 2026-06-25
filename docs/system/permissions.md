@@ -30,6 +30,9 @@ Hệ thống hiện chỉ phân biệt hai trạng thái, chưa có vai trò (ro
 | `/` | Cho phép | Cho phép |
 | `/auth/callback` | Cho phép (xử lý code) | Cho phép |
 | `/home` | **Redirect về `/login`** | Cho phép (hiển thị trang chủ) |
+| `/prelaunch` | **Cho phép (công khai)** | Cho phép |
+
+> `/prelaunch` là route đầu tiên trong ứng dụng được truy cập công khai mà không cần phiên — standalone, không có chrome xác thực. Proxy (`lib/supabase/proxy.ts`) không bị ảnh hưởng: nó chỉ redirect người dùng đã đăng nhập ra khỏi `/login`, không tác động đến `/prelaunch`.
 
 Redirect `/login` → `/home` được thực thi ở hai lớp (cả hai dùng `/home`, khớp `POST_LOGIN_REDIRECT`):
 1. `lib/supabase/proxy.ts` (`updateSession`) — chạy qua Proxy mọi request.

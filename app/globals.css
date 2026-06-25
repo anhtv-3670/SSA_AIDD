@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* F008 Countdown — self-hosted 7-segment LCD font (was an external CDN link).
+   Only downloads when an element uses "Digital Numbers" (the /prelaunch digits). */
+@font-face {
+  font-family: "Digital Numbers";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/digital-numbers/DigitalNumbers-Regular.woff") format("woff");
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

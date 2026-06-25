@@ -20,9 +20,7 @@ Tính năng dùng lại toàn bộ hạ tầng auth đã dựng ở F001 (`@supa
 `app/login/actions.ts`). UI là **tạm thời (provisional)** — đối chiếu với màn hình MoMorph
 `i87tDx10uM` khi MCP đọc được thiết kế.
 
-> Lưu ý: sau đăng nhập thành công, `/auth/callback` hiện vẫn redirect về `/` (mặc định F001),
-> không phải `/home`. `/home` chỉ được mở khi người dùng điều hướng trực tiếp hoặc ứng dụng
-> chủ động redirect tới đó. Đây là quyết định sản phẩm chưa chốt.
+> Lưu ý: sau đăng nhập thành công, `/auth/callback` redirect về `/home` (F001 đã cấu hình).
 
 ## Polymorphic Behavior
 
@@ -36,7 +34,9 @@ None.
 - FR-2: Nếu KHÔNG có người dùng hợp lệ → `redirect('/login')` (chốt bảo vệ ở cấp trang).
 - FR-3: Nếu có người dùng → hiển thị lời chào kèm định danh (`user.email ?? user.phone ?? user.id`).
 - FR-4: Có nút "Đăng xuất" — Server Component `SignOutButton` gọi Server Action `signOut` (dùng lại từ `app/login/actions.ts`) qua `<form action={signOut}>`.
-- FR-5: Vùng nội dung tạm thời, sẵn sàng thay bằng layout thật theo thiết kế MoMorph.
+- FR-5: Hero section hiển thị "Coming soon" + đồng hồ đếm ngược **sống** (`HomeCountdown`, Client Component) — dùng lại engine F008 (`computeCountdown`, `pad2` từ `lib/countdown.ts`) và `eventStartMs()` từ `lib/event-config.ts`; `home-hero.tsx` giữ là Server Component.
+- FR-6: Ngày sự kiện "Thời gian" lấy từ `formatEventDate()` (`lib/event-config.ts`, đọc `NEXT_PUBLIC_EVENT_START_ISO`); không hardcode.
+- FR-7: CTA "ABOUT AWARDS" điều hướng tới `/he-thong-giai`; CTA "ABOUT KUDOS" điều hướng tới `/sun-kudos` — dùng `next/link` (thay thế nút chết trước đây).
 
 ### Business Rules
 
@@ -53,11 +53,12 @@ None.
 
 ### Algorithms
 
-None.
+- ALG-countdown: `computeCountdown(targetMs, nowMs)` trả `{days, hours, minutes, seconds}`. Nếu `nowMs ≥ targetMs` (sự kiện đã qua), trả về `{0,0,0,0}` → hiển thị `00/00/00`. Định nghĩa tại `lib/countdown.ts` (dùng lại từ F008).
 
 ### External Integrations
 
 - **Supabase Auth**: `getUser()` (đọc người dùng hiện tại), `signOut()` (qua Server Action dùng lại từ F001).
+- **Event Config**: `lib/event-config.ts` — `eventStartMs()` (target countdown), `formatEventDate()` (hiển thị ngày), đọc `NEXT_PUBLIC_EVENT_START_ISO`; dùng chung với F008.
 
 ### Verification
 
@@ -68,8 +69,8 @@ None.
 
 ### US — Xem trang chủ khi đã đăng nhập
 Là người dùng đã đăng nhập, tôi muốn mở `/home` và thấy trang chủ kèm thông tin tài khoản.
-- FR liên quan: FR-1, FR-3, FR-5
-- Acceptance: có phiên → thấy trang chủ + định danh (`email ?? phone ?? id`); thao tác đăng xuất khả dụng.
+- FR liên quan: FR-1, FR-3, FR-5, FR-6, FR-7
+- Acceptance: có phiên → thấy trang chủ + định danh (`email ?? phone ?? id`); đồng hồ đếm ngược sống; ngày sự kiện từ config; thao tác đăng xuất và CTA điều hướng khả dụng.
 
 ### US — Bị chặn khi chưa đăng nhập
 Là khách chưa đăng nhập, khi mở `/home` tôi được đưa về `/login`.
@@ -108,13 +109,16 @@ See edge-cases.md.
 |---------|-----------|
 | Home page (Server Component, auth guard) | `app/home/page.tsx` |
 | Sign-out button (Server Component) | `app/home/sign-out-button.tsx` |
+| Hero section (Server Component) | `app/home/home-hero.tsx` |
+| Live countdown (Client Component) | `app/home/home-countdown.tsx` |
 | signOut Server Action (dùng lại) | `app/login/actions.ts` |
 | Server client | `lib/supabase/server.ts` |
+| Event config (target + format, dùng lại) | `lib/event-config.ts` |
+| Countdown engine (dùng lại từ F008) | `lib/countdown.ts` |
 
 ## Unresolved Questions
 
 - Nội dung/khối thành phần thật của trang chủ — chờ dữ liệu thiết kế MoMorph `i87tDx10uM`.
-- `/home` có thay thế `/` làm trang chủ chính thức sau đăng nhập không (hiện tồn tại song song, sau đăng nhập vẫn về `/`).
 
 ## Spec Documents
 

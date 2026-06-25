@@ -20,6 +20,9 @@ interface KudosCardProps {
   variant?: "highlight" | "feed";
   /** width override for feed cards */
   fullWidth?: boolean;
+  /** When true renders a red "Spam" badge at the top-right corner (F007 D.3.1).
+   *  Additive — defaults to false so all existing F005/F006 usages are unaffected. */
+  spam?: boolean;
 }
 
 // Module-scope helper — safe for React Compiler (no mutation of outer-scope values)
@@ -36,7 +39,7 @@ const FONT_BASE: CSSProperties = {
   fontWeight: 700,
 };
 
-export function KudosCard({ entry, variant = "highlight", fullWidth }: KudosCardProps) {
+export function KudosCard({ entry, variant = "highlight", fullWidth, spam = false }: KudosCardProps) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(entry.likeCount);
   const [toastVisible, setToastVisible] = useState(false);
@@ -87,13 +90,21 @@ export function KudosCard({ entry, variant = "highlight", fullWidth }: KudosCard
         position: "relative",
       }}
     >
+      {/* Spam badge — F007 D.3.1, top-right red pill. Additive: default false. */}
+      {spam && (
+        <div aria-label="Spam" style={{ position: "absolute", top: "12px", right: "12px", backgroundColor: "#D4271D", color: "#FFFFFF", borderRadius: "48px", padding: "2px 10px", ...FONT_BASE, fontSize: "12px", lineHeight: "18px", zIndex: 5, pointerEvents: "none" }}>
+          Spam
+        </div>
+      )}
+
       {/* Toast */}
       {toastVisible && (
         <div
           role="status"
           aria-live="polite"
           style={{
-            position: "absolute", top: "12px", right: "12px",
+            // H-1 (F007): drop below the Spam badge when present so they don't overlap
+            position: "absolute", top: spam ? "44px" : "12px", right: "12px",
             background: "#00101A", color: "#FFEA9E",
             border: "1px solid #998C5F", borderRadius: "8px",
             padding: "8px 14px", zIndex: 10, pointerEvents: "none",

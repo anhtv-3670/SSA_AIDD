@@ -12,16 +12,20 @@ lang: vi
 
 | Code | Tên | Route | Mô tả |
 |------|-----|-------|-------|
-| SCR-home | Trang chủ | `/home` | Landing sau đăng nhập: lời chào + định danh tài khoản, nút đăng xuất, vùng nội dung (tạm thời). |
+| SCR-home | Trang chủ | `/home` | Landing sau đăng nhập: hero section (đếm ngược sống, ngày sự kiện từ config, CTA điều hướng), lời chào + định danh tài khoản, nút đăng xuất. |
 
 > Nguồn thiết kế: MoMorph screen `i87tDx10uM` (fileKey `9ypp4enmFmdK3YAFJLIu6C`).
 > UI hiện thực là **tạm thời** — giá trị thị giác đối chiếu với thiết kế MoMorph khi MCP đọc được. KHÔNG đoán pixel.
 
-### SCR-home — thành phần (tạm thời)
+### SCR-home — thành phần
 
 - Header: định danh người dùng (`user.email ?? user.phone ?? user.id`) + nút "Đăng xuất".
-- Tiêu đề trang "Trang chủ".
-- Vùng nội dung placeholder (chờ thiết kế MoMorph).
+- Hero (`HomeHero`, Server Component):
+  - Nhãn "Coming soon" + đồng hồ đếm ngược sống (`HomeCountdown`, Client Component) — DAYS / HOURS / MINUTES / SECONDS.
+  - "Thời gian": ngày sự kiện từ `formatEventDate()` (không hardcode).
+  - CTA "ABOUT AWARDS" → `Link` tới `/he-thong-giai`.
+  - CTA "ABOUT KUDOS" → `Link` tới `/sun-kudos`.
+- Vùng nội dung còn lại (tạm thời — chờ thiết kế MoMorph `i87tDx10uM`).
 
 ### UI States
 
@@ -30,5 +34,6 @@ lang: vi
 
 ## User Journey
 
-(đã đăng nhập) mở `/home` → server `getUser()` → có user: render trang chủ · không user: redirect `/login`.
+(đã đăng nhập) mở `/home` → server `getUser()` → có user: render trang chủ (hero + countdown sống) · không user: redirect `/login`.
+Bấm "ABOUT AWARDS" → `/he-thong-giai`. Bấm "ABOUT KUDOS" → `/sun-kudos`.
 Bấm "Đăng xuất" → `signOut()` → redirect `/login`.

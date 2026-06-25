@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { Provider } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/server";
+import { isTestLoginEnabled, testCredentials } from "@/lib/test-login";
 
 const SUPPORTED_OAUTH_PROVIDERS = ["google", "github"] as const;
 type SupportedProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number];
@@ -72,6 +73,30 @@ export async function signInWithOAuth(formData: FormData): Promise<void> {
   }
 
   redirect(data.url);
+}
+
+/**
+ * Test-mode login: signs in the seeded test account via Supabase password auth,
+ * bypassing the real Google OAuth round-trip. Produces a normal Supabase session.
+ *
+ * Guarded twice: this action no-ops to the login page unless `isTestLoginEnabled()`
+ * (ENABLE_TEST_LOGIN="true" AND not production). NEVER enable in production.
+ */
+export async function signInAsTestUser(): Promise<void> {
+  if (!isTestLoginEnabled()) {
+    // Not available — behave as if the route does not exist.
+    redirect("/login");
+  }
+
+  const { email, password } = testCredentials();
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    redirect("/login?error=testlogin");
+  }
+
+  redirect(POST_LOGIN_REDIRECT);
 }
 
 /** Ends the session and returns the user to the login page. */

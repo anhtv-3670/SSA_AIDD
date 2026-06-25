@@ -1,5 +1,9 @@
 // Shared person display: avatar circle + name + dept + title badge
 // Used by KudosCard for sender/receiver blocks.
+// Avatar + name wrapped in <Link href="/profile"> (F007 EC-7).
+// SIMPLIFICATION: all profile links → /profile (single page); per-user deferred.
+
+import Link from "next/link";
 
 export function AvatarCircle({ initial, size = 64 }: { initial: string; size?: number }) {
   return (
@@ -43,18 +47,24 @@ export function PersonBlock({
   initial: string;
 }) {
   return (
-    <div
+    // Single Link wrapping the whole block (avatar + name + meta) → /profile (EC-7, M-3).
+    // One tab stop, one accessible name; name text stays visible to AT. Layout identical to the
+    // prior plain column div.
+    <Link
+      href="/profile"
+      aria-label={`Profile của ${name}`}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         gap: "13px",
         width: "235px",
+        textDecoration: "none",
+        color: "inherit",
       }}
     >
       <AvatarCircle initial={initial} />
       <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "235px" }}>
-        {/* Name */}
         <p
           style={{
             fontFamily: "Montserrat, sans-serif",
@@ -121,6 +131,6 @@ export function PersonBlock({
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

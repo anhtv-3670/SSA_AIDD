@@ -4,9 +4,11 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/get-locale";
+import { isTestLoginEnabled } from "@/lib/test-login";
 import { LoginHeader } from "./login-header";
 import { LoginFooter } from "./login-footer";
 import { GoogleLoginButton } from "./google-login-button";
+import { TestLoginButton } from "./test-login-button";
 
 // UI reconciled to MoMorph design GzbNeVGJHz (Google-only login).
 // Auth backend (signInWithOAuth, signOut, /auth/callback) is final.
@@ -32,10 +34,13 @@ export default async function LoginPage({
   }
 
   const [{ error }, locale] = await Promise.all([searchParams, getLocale()]);
-  const oauthError =
+  const loginError =
     error === "oauth"
       ? "Đăng nhập bằng Google thất bại. Vui lòng thử lại."
-      : undefined;
+      : error === "testlogin"
+        ? "Đăng nhập test thất bại. Kiểm tra tài khoản seed (supabase/seed.sql)."
+        : undefined;
+  const showTestLogin = isTestLoginEnabled();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#00101A" }}>
@@ -84,7 +89,7 @@ export default async function LoginPage({
               Đăng nhập để khám phá!
             </p>
 
-            {oauthError ? (
+            {loginError ? (
               <p
                 role="alert"
                 style={{
@@ -95,11 +100,14 @@ export default async function LoginPage({
                   margin: 0,
                 }}
               >
-                {oauthError}
+                {loginError}
               </p>
             ) : null}
 
             <GoogleLoginButton />
+
+            {/* Dev-only test login — bypasses Google OAuth (gated by ENABLE_TEST_LOGIN, non-prod) */}
+            {showTestLogin ? <TestLoginButton /> : null}
           </div>
         </div>
 

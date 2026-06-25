@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import { LanguageSelector } from "@/components/language-selector";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/locale";
@@ -112,27 +113,26 @@ export function SiteHeader({ userEmail, active, locale = DEFAULT_LOCALE }: SiteH
           </svg>
         </button>
 
-        {/* User profile button — mms_A1.8_Button-IC, 40x40; wraps SignOutButton concept */}
-        {/* RECONSTRUCTED: user profile icon (raster unavailable) */}
+        {/* User profile icon — mms_A1.8_Button-IC, 40x40.
+            Navigates to /profile. SignOutButton stays alongside.
+            SIMPLIFICATION: all profile links → /profile (single page); per-user deferred. */}
         <div className="relative flex items-center" style={{ gap: "8px" }}>
-          <button
-            type="button"
+          <Link
+            href="/profile"
             className="flex items-center justify-center"
             style={{
               width: "40px",
               height: "40px",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
               borderRadius: "4px",
+              flexShrink: 0,
             }}
-            aria-label={userEmail ? `User menu for ${userEmail}` : "User menu"}
+            aria-label={userEmail ? `Profile: ${userEmail}` : "Profile"}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="8" r="4" fill="rgba(255,255,255,0.9)" />
               <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" />
             </svg>
-          </button>
+          </Link>
           <SignOutButton />
         </div>
       </div>
