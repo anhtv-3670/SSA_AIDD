@@ -1,7 +1,7 @@
 # F007 — Personal Profile (Profile bản thân)
 
 ## Mục đích
-Trang `/profile` — hồ sơ cá nhân của Sunner đang đăng nhập: avatar, tên, danh hiệu, bộ sưu tập icon, thống kê Kudos/tim/Secret Box, và feed Kudos (đã gửi / đã nhận). Đây là đích đến của điều hướng profile bị defer ở F005/F006. Phạm vi: **trình bày + mock**, không DB.
+Trang `/profile` — hồ sơ cá nhân của Sunner đang đăng nhập: avatar, tên, danh hiệu, bộ sưu tập icon, thống kê Kudos/tim/Secret Box, và feed Kudos (đã gửi / đã nhận). Đây là đích đến của điều hướng profile bị defer ở F005/F006. **F012 (as-built):** trình bày dựa trên dữ liệu thật — stats, hero tier suy ra, badge collection từ Supabase qua `getProfile()` + `profile_stats()` RPC.
 
 ## Người dùng & giá trị
 - Sunner đã đăng nhập (auth guard như các trang khác).

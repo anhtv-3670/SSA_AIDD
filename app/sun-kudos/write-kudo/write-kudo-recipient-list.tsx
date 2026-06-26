@@ -1,15 +1,15 @@
 "use client";
 
-// Dropdown listbox for the recipient autocomplete — renders the filtered Sunner options.
+// Dropdown listbox for the recipient autocomplete — renders the filtered profile options.
 
-import type { MockSunner } from "./write-kudo-mock-data";
+import type { RecipientOption } from "./write-kudo-modal";
 import { BASE_FONT } from "./write-kudo-styles";
 
 interface WriteKudoRecipientListProps {
-  options: MockSunner[];
+  options: RecipientOption[];
   selectedName: string;
   optionRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>;
-  onSelect: (name: string) => void;
+  onSelect: (id: string, name: string) => void;
   onOptionKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => void;
 }
 
@@ -42,12 +42,12 @@ export function WriteKudoRecipientList({
         boxShadow: "0 4px 16px rgba(0,16,26,0.10)",
       }}
     >
-      {options.map((sunner, index) => (
-        <li key={sunner.id} role="option" aria-selected={selectedName === sunner.name}>
+      {options.map((recipient, index) => (
+        <li key={recipient.id} role="option" aria-selected={selectedName === recipient.name}>
           <button
             ref={(el) => { optionRefs.current[index] = el; }}
             type="button"
-            onClick={() => onSelect(sunner.name)}
+            onClick={() => onSelect(recipient.id, recipient.name)}
             onKeyDown={(e) => onOptionKeyDown(e, index)}
             style={{
               display: "flex",
@@ -55,7 +55,7 @@ export function WriteKudoRecipientList({
               gap: "12px",
               width: "100%",
               padding: "10px 16px",
-              background: selectedName === sunner.name ? "rgba(255,234,158,0.15)" : "transparent",
+              background: selectedName === recipient.name ? "rgba(255,234,158,0.15)" : "transparent",
               border: "none",
               cursor: "pointer",
               textAlign: "left",
@@ -80,10 +80,12 @@ export function WriteKudoRecipientList({
               }}
               aria-hidden="true"
             >
-              {sunner.initial}
+              {recipient.initial}
             </span>
-            <span>{sunner.name}</span>
-            <span style={{ color: "#999", fontSize: "12px", marginLeft: "auto" }}>{sunner.dept}</span>
+            <span>{recipient.name}</span>
+            <span style={{ color: "#999", fontSize: "12px", marginLeft: "auto" }}>
+              {recipient.dept}
+            </span>
           </button>
         </li>
       ))}

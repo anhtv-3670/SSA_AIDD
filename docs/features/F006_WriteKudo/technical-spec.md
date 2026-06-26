@@ -1,7 +1,7 @@
 # F006 — Technical Spec
 
 ## Kiến trúc
-Presentational client components under `app/sun-kudos/write-kudo/`. No backend. Modal open-state lives in `kudos-client-shell.tsx` (F005); compose bar triggers open; shell renders the modal.
+Client components under `app/sun-kudos/write-kudo/`. Modal open-state lives in `kudos-client-shell.tsx` (F005). **F012 (as-built):** submit gọi Server Action `createKudo` (insert DB + hashtags + Storage upload); recipients + hashtags load từ Supabase; `write-kudo-mock-data.ts` emptied (`export {}`). `write-kudo-validation.ts` thuần vẫn giữ.
 
 ## Components / files (19 files shipped)
 | Vai trò | File | Client? |
@@ -46,6 +46,11 @@ All files under `app/sun-kudos/write-kudo/`.
 ## Integration (F005)
 - `kudos-client-shell.tsx`: add `writeOpen` state; render `<WriteKudoModal open={writeOpen} onClose={...}/>`; pass `onOpenWrite` to compose bar.
 - `kudos-compose-bar.tsx`: the A.1 "gửi lời cảm ơn" input becomes a button-styled trigger (looks like the input, `role` button, opens modal). The second "Tìm kiếm Sunner" input keeps the existing `query` filter. Remove A.1's contribution to `query` (query now driven only by the Sunner search).
+
+## Integration (F009 — second entry point)
+- FAB (`components/fab-button.tsx` + `components/write-kudo-fab.tsx`) cung cấp lối vào thứ hai cho cùng modal.
+- Trên /home, /he-thong-giai, /profile: `<WriteKudoFab/>` tự quản lý state open + render `WriteKudoModal` riêng.
+- Trên /sun-kudos: `kudos-client-shell.tsx` render `<FabButton onWrite={()=>setWriteOpen(true)}/>` — **reuse cùng `writeOpen` state** (không có modal thứ hai).
 
 ## Styling
 Inline styles + tokens (`#00101A`, `#FFEA9E`, cream `#FFF8E1`, border `#998C5F`, Montserrat). Files < 200 lines. Toast: reuse the simple toast pattern from `kudos-card.tsx` (or a tiny shared toast).

@@ -17,6 +17,8 @@ export interface ImagePreview {
   id: string;
   url: string;
   name: string;
+  /** Original File reference — carried for server-side Storage upload on submit. */
+  file?: File;
 }
 
 interface WriteKudoImagesProps {
@@ -62,7 +64,7 @@ export function WriteKudoImages({ images, onAdd, onRemove, formatError, onFormat
     const previews: ImagePreview[] = toAdd.map((file) => {
       const url = URL.createObjectURL(file);
       ownedUrls.current.add(url);
-      return { id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`, url, name: file.name };
+      return { id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`, url, name: file.name, file };
     });
 
     if (previews.length > 0) onAdd(previews);

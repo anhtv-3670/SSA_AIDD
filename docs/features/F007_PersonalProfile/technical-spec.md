@@ -2,7 +2,7 @@
 
 ## Kiến trúc
 - Route `app/profile/page.tsx` (Server Component): auth guard mirror `app/home/page.tsx` (createClient → getUser → null ? redirect('/login')); read `getLocale()`; render SiteHeader + sections + SiteFooter. Dark `#00101A`.
-- Mock profile data: `app/profile/profile-data.ts` (typed: name, dept, danhHieu/title, avatarInitial, stats, iconCollection[], sentKudos[], receivedKudos[]). Reuse `KudosEntry` type + entries from `app/sun-kudos/kudos-data.ts` where possible.
+- **F012 (as-built):** `app/profile/profile-data.ts` types giữ nguyên; data thực đến từ `lib/data/profile-queries.ts` (`getProfile()`, `getProfileStats()`) + `getBadgeCollection()`. Hero tier từ `profile_stats()` RPC — vocabulary: New Hero / Rising Hero / Super Hero / Legend Hero.
 
 ## Components (files < 200 lines)
 | Vai trò | File | Client? |

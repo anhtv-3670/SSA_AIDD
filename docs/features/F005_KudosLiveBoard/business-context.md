@@ -11,6 +11,7 @@ Trang `/sun-kudos` — bảng "live" hiển thị hệ thống ghi nhận & cả
 - **Trong phạm vi (build):** hero KV + ô nhập, HIGHLIGHT KUDOS (carousel + filter), SPOTLIGHT BOARD (word-cloud tĩnh + ticker + "388 KUDOS"), ALL KUDOS (feed card + sidebar thống kê + "10 Sunner nhận quà"). Header/Footer dùng chung (đã có). Mock data trích từ design.
 - **Tương tác client (mock):** carousel paging; like toggle (đổi màu/số, không lưu); Copy Link → toast "Link copied — ready to share!"; filter Hashtag + Phòng ban (lọc mock); search 2 ô (lọc mock).
 - **Ngoài phạm vi (placeholder tĩnh/disabled):** dialog gửi kudos, dialog Secret Box ("Mở quà"), điều hướng profile, điều hướng chi tiết kudos, pan/zoom word-cloud (vẽ tĩnh), infinite scroll (render mock list), quy tắc nghiệp vụ tim (ngày đặc biệt/1-lượt/disable người gửi), persistence, kết nối DB.
+- **F012 (as-built):** feed, highlight, sidebar stats đọc Supabase thật; like/unlike persist (`hearts` table); filter chạy trên dữ liệu thật; spotlightNames + tickerEntries giữ decorative.
 
 ## Route & điều hướng
 - Tạo route `/sun-kudos` (Server Component, auth guard → redirect `/login` nếu chưa đăng nhập). Sau khi tạo, CTA banner trang chủ điều hướng đúng (FR "notice for navigation on home screen" = route tồn tại). Header nav "Sun* Kudos" active.

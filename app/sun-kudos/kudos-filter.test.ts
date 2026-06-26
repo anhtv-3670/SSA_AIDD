@@ -33,7 +33,7 @@ const personD: KudosPerson = {
   id: "d1",
   name: "Diana",
   dept: "HRD01",
-  title: "IDOL GIỚI TRẺ",
+  title: "Legend Hero",
   initial: "D",
 };
 

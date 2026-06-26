@@ -40,5 +40,5 @@ nhập, giúp họ hiểu các hạng mục giải, số lượng và giá trị
 ## Ràng buộc
 
 - Chỉ người đã đăng nhập mới xem được (giống `/home`).
-- Nội dung tĩnh, không CMS/DB ở giai đoạn này.
+- **F012 (as-built):** Nội dung giải thưởng đọc từ bảng `awards` Supabase — không còn tĩnh/CMS-free.
 - Ngôn ngữ: tiếng Việt (vi).

@@ -10,8 +10,7 @@ import { KudosCard } from "./kudos-card";
 import { KudosSectionHeader } from "./kudos-section-header";
 import { KudosFilterDropdown } from "./kudos-filter-dropdown";
 import { CarouselArrow } from "./kudos-carousel-arrow";
-import type { KudosEntry } from "./kudos-data";
-import { hashtags, departments } from "./kudos-data";
+import type { KudosEntry } from "@/lib/data/types";
 
 interface KudosHighlightProps {
   entries: KudosEntry[];
@@ -19,6 +18,10 @@ interface KudosHighlightProps {
   deptFilter: string;
   onHashtagChange: (v: string) => void;
   onDeptChange: (v: string) => void;
+  /** Hashtag labels (e.g. "#Dedicated") from the DB catalog. */
+  hashtagOptions: string[];
+  /** Department codes (e.g. "CEVC10") from the DB catalog. */
+  deptOptions: string[];
 }
 
 export function KudosHighlight({
@@ -27,6 +30,8 @@ export function KudosHighlight({
   deptFilter,
   onHashtagChange,
   onDeptChange,
+  hashtagOptions,
+  deptOptions,
 }: KudosHighlightProps) {
   const [page, setPage] = useState(0);
 
@@ -52,13 +57,13 @@ export function KudosHighlight({
     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
       <KudosFilterDropdown
         label="Hashtag"
-        options={hashtags}
+        options={hashtagOptions}
         value={hashtagFilter}
         onChange={onHashtagChange}
       />
       <KudosFilterDropdown
         label="Phòng ban"
-        options={departments}
+        options={deptOptions}
         value={deptFilter}
         onChange={onDeptChange}
       />

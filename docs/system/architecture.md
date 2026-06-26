@@ -52,8 +52,11 @@ page.tsx (Server Component)
   getLocale()
   render <SiteHeader active={…} locale={locale} />
   render <SiteFooter />
+  render <WriteKudoFab />          ← chrome dùng chung (FAB, F009)
   render nội dung trang (Server hoặc Client Component)
 ```
+
+Ngoài `SiteHeader`/`SiteFooter`, trang authed còn render `<WriteKudoFab />` (`components/write-kudo-fab.tsx`) — FAB cố định góc dưới-phải, z-index 40, xuất hiện trên home/he-thong-giai/profile; `/sun-kudos` dùng `<FabButton>` trực tiếp để reuse modal sẵn có. FAB là speed-dial có thể mở rộng: pill thu gọn là toggle duy nhất (`aria-expanded`), nhấn bung menu 3 nút (Thể lệ → F010 modal, Viết KUDOS → F006 modal, Hủy). `/sun-kudos` còn thêm chip trigger "Secret Box (N)" mở `<SecretBoxModal>` (F011, z-index panel 301).
 
 Khi thêm route mới cần xác thực, sao chép mẫu này — không tạo middleware riêng cho từng trang.
 
@@ -86,6 +89,54 @@ Server Component (header) gọi `getLocale()` → truyền `initialLocale` vào 
 - **ADR: `resolveOrigin` dùng chuỗi dự phòng Origin → X-Forwarded-Host → Host → localhost.** Lý do:
   reverse proxy thường không truyền header `Origin`; `X-Forwarded-Host` + `X-Forwarded-Proto` bù đắp.
   Xem `app/login/actions.ts#resolveOrigin`.
+
+## Tầng dữ liệu (Data Layer — F012)
+
+Kể từ F012 ứng dụng có Postgres backend thực sự trên Supabase (local: API :54321, DB :54322). Trước
+F012 mọi tính năng chạy trên mock tĩnh; F012 đưa vào persistence + RLS.
+
+### Client tiers (dùng lại từ auth layer)
+
+`lib/supabase/server.ts` (RSC/actions, cookie-bound) · `lib/supabase/client.ts` (browser) ·
+`lib/supabase/proxy.ts` (session refresh). Tất cả đọc `NEXT_PUBLIC_SUPABASE_URL` + `_ANON_KEY` qua
+`lib/supabase/env.ts`. `service_role` key KHÔNG được dùng — mọi mutation dựa vào RLS + `auth.uid()`.
+
+### Data-access layer (`lib/data/*`)
+
+Typed query/mutation helpers per entity: kudos, profile, hearts, secret-box, awards, badges,
+catalogs. Server Components đọc qua `createClient()` (server); mutations chạy dưới dạng Server
+Actions. Generated DB types: `lib/supabase/database.types.ts` (`npx supabase@2.90.x gen types
+typescript --local`).
+
+### Migrations & Seed
+
+`supabase/migrations/*.sql` (0001–0007): schema, RLS, triggers, RPC, indexes, least-privilege.
+`supabase/seed.sql`: static catalogs + demo rows + test account.
+
+### Storage
+
+Bucket `kudos-images` (public read, authenticated write) cho ảnh đính kèm F006.
+
+### Entities (12 bảng public)
+
+profiles · departments · hashtags · hero_tiers · awards · badges · kudos · kudos_hashtags ·
+kudos_images · hearts · secret_boxes · badge_collections.
+(Chi tiết columns: `docs/features/F012_SupabaseBackend/screens.md`.)
+
+### Server-authoritative logic
+
+- Trigger `handle_new_user` → profiles + secret_boxes row on signup.
+- Trigger `on_kudos_insert` → +1 unopened secret box to receiver.
+- RPC `open_secret_box()` (SECURITY DEFINER) → atomic decrement + weighted-random badge award.
+- Hero tier derived (not stored): `current_hero_tier(n)` tra `hero_tiers` catalog. Vocabulary:
+  **New Hero / Rising Hero / Super Hero / Legend Hero**.
+
+### Guarded-page pattern (cập nhật)
+
+Pages vẫn guard bằng `createClient()` → `getUser()` → `redirect('/login')`; nay còn đọc dữ liệu
+per-user thật qua `lib/data/*` thay vì mock modules.
+
+---
 
 ## Font tự host (Self-hosted Fonts)
 

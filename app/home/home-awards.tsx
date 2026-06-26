@@ -6,50 +6,16 @@
 // mms_C2_Award list (5005:14974): two rows of 3, gap 80px between rows
 //   Frame 491 row gap 80px; Frame 493 row gap 80px
 
+import type { AwardDetail } from "@/lib/data/types";
 import { AwardCard } from "./award-card";
 
-const AWARDS = [
-  {
-    id: "top-talent",
-    name: "Top Talent",
-    description: "Vinh danh top cá nhân xuất sắc trên mọi phương diện",
-    ringColor: "#FAE287",
-  },
-  {
-    id: "top-project",
-    name: "Top Project",
-    description: "Vinh danh dự án tiêu biểu của năm",
-    ringColor: "#FAE287",
-  },
-  {
-    id: "top-project-leader",
-    name: "Top Project Leader",
-    description: "Vinh danh leader dự án xuất sắc dẫn dắt team chinh phục mục tiêu",
-    ringColor: "#FAE287",
-  },
-  {
-    id: "best-manager",
-    name: "Best Manager",
-    description: "Vinh danh nhà quản lý truyền cảm hứng và xây dựng đội ngũ vượt trội",
-    ringColor: "#FAE287",
-  },
-  {
-    id: "signature-creator",
-    name: "Signature 2025 Creator",
-    description: "Vinh danh những cá nhân tạo dấu ấn nổi bật năm 2025",
-    ringColor: "#FAE287",
-  },
-  {
-    id: "mvp",
-    name: "MVP",
-    description: "Most Valuable Person — cá nhân có đóng góp giá trị nhất toàn công ty",
-    ringColor: "#FAE287",
-  },
-];
+interface HomeAwardsProps {
+  awards: AwardDetail[];
+}
 
-export function HomeAwards() {
-  const row1 = AWARDS.slice(0, 3);
-  const row2 = AWARDS.slice(3, 6);
+export function HomeAwards({ awards }: HomeAwardsProps) {
+  const row1 = awards.slice(0, 3);
+  const row2 = awards.slice(3, 6);
 
   return (
     <section

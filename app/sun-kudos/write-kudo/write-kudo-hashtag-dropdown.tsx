@@ -2,12 +2,13 @@
 
 // Dropdown listbox of available hashtag options for the hashtag picker.
 
+import type { HashtagOption } from "@/lib/data/catalog-queries";
 import { BASE_FONT } from "./write-kudo-styles";
 
 interface WriteKudoHashtagDropdownProps {
-  options: string[];
+  options: HashtagOption[];
   optionRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>;
-  onAdd: (tag: string) => void;
+  onAdd: (opt: HashtagOption) => void;
   onOptionKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => void;
 }
 
@@ -36,12 +37,12 @@ export function WriteKudoHashtagDropdown({
         boxShadow: "0 4px 16px rgba(0,16,26,0.10)",
       }}
     >
-      {options.map((tag, index) => (
-        <li key={tag} role="option" aria-selected="false">
+      {options.map((opt, index) => (
+        <li key={opt.id} role="option" aria-selected="false">
           <button
             ref={(el) => { optionRefs.current[index] = el; }}
             type="button"
-            onClick={() => onAdd(tag)}
+            onClick={() => onAdd(opt)}
             onKeyDown={(e) => onOptionKeyDown(e, index)}
             style={{
               display: "block",
@@ -57,7 +58,7 @@ export function WriteKudoHashtagDropdown({
               lineHeight: "20px",
             }}
           >
-            {tag}
+            {opt.label}
           </button>
         </li>
       ))}

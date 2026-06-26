@@ -42,6 +42,40 @@ Chốt bảo vệ `/home` đặt **ở cấp trang** (`app/home/page.tsx`): gọ
 server, nếu null → `redirect('/login')`. Không dựa vào proxy cho việc chặn `/home` — proxy chỉ làm
 mới phiên và chuyển hướng người đã đăng nhập khỏi `/login`; tránh truy vấn nặng trong proxy.
 
+## RLS — Mô hình phân quyền DB (F012)
+
+Mọi bảng trong schema `public` đều bật `ROW LEVEL SECURITY`. Reads yêu cầu authenticated;
+writes bị ràng buộc theo `auth.uid()`. Mutations đặc quyền (secret box count, badge award)
+đi qua SECURITY DEFINER trigger/RPC — không cho phép client ghi trực tiếp.
+
+### Per-table policy
+
+| Bảng | SELECT | INSERT | UPDATE / DELETE |
+|------|--------|--------|------------------|
+| `profiles` | authenticated | (trigger only) | UPDATE own (`id = auth.uid()`) |
+| `departments` / `hashtags` / `hero_tiers` / `awards` / `badges` | authenticated (read-only catalogs) | — | — |
+| `kudos` | authenticated | `sender_id = auth.uid()` | — (immutable this pass) |
+| `kudos_hashtags` / `kudos_images` | authenticated | parent `kudos.sender = auth.uid()` | — |
+| `hearts` | authenticated | `user_id = auth.uid()` | DELETE own (un-like) |
+| `secret_boxes` | own (`user_id = auth.uid()`) | (trigger) | via RPC/trigger only |
+| `badge_collections` | own (`user_id = auth.uid()`) | via RPC only | — |
+
+### Least-privilege (migration 0007)
+
+- `anon` role: KHÔNG có EXECUTE trên `open_secret_box()`, `profile_stats()`, `current_hero_tier()`.
+- `authenticated` role: KHÔNG có direct UPDATE trên `secret_boxes` (chỉ qua RPC/trigger).
+- `authenticated` role vẫn giữ EXECUTE grants từ migration 0004.
+
+### Storage
+
+`kudos-images`: public read; INSERT/UPDATE restricted to `authenticated` role.
+
+### Deferred (ngoài scope F012)
+
+Admin/award-winner roles, per-user profile visibility tiers, anon (logged-out) public read.
+
+---
+
 ## Mở rộng tương lai (chưa hiện thực)
 
 - Thêm route được bảo vệ (vd `/dashboard`, `/settings`) theo cùng pattern cấp trang của `/home`.

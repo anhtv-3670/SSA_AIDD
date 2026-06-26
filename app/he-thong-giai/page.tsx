@@ -6,10 +6,11 @@ import { getLocale } from "@/lib/get-locale";
 import { AwardKeyvisual } from "./award-keyvisual";
 import { AwardCategoryNav } from "./award-category-nav";
 import { AwardDetailCard } from "./award-detail-card";
-import { AWARDS } from "./award-data";
+import { getAwards } from "@/lib/data/awards-queries";
 import { SiteHeader } from "@/components/site-header";
 import { SunKudosBanner } from "@/components/sun-kudos-banner";
 import { SiteFooter } from "@/components/site-footer";
+import { WriteKudoFab } from "@/components/write-kudo-fab";
 
 export const metadata: Metadata = {
   title: "Hệ thống giải",
@@ -28,8 +29,11 @@ export default async function HeThongGiaiPage() {
 
   const locale = await getLocale();
 
-  // Build nav items from AWARDS (id + name only — no extra data needed in nav)
-  const navItems = AWARDS.map(({ id, name }) => ({ id, name }));
+  // Fetch awards from DB (read-only catalog, SELECT policy allows all authenticated users)
+  const awards = await getAwards(supabase);
+
+  // Build nav items (id + name only — no extra data needed in nav)
+  const navItems = awards.map(({ id, name }) => ({ id, name }));
 
   return (
     // Dark base: #00101A — authoritative from design tokens
@@ -124,7 +128,7 @@ export default async function HeThongGiaiPage() {
               minWidth: 0,
             }}
           >
-            {AWARDS.map((award, index) => (
+            {awards.map((award, index) => (
               <AwardDetailCard key={award.id} {...award} index={index} />
             ))}
           </div>
@@ -136,6 +140,9 @@ export default async function HeThongGiaiPage() {
 
       {/* Footer */}
       <SiteFooter />
+
+      {/* F009 FAB — fixed bottom-right, shown on all authenticated pages */}
+      <WriteKudoFab />
     </div>
   );
 }

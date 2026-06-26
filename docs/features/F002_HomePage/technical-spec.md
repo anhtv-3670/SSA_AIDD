@@ -102,6 +102,7 @@ See edge-cases.md.
 - `/` (create-next-app mặc định) vẫn giữ nguyên; `/home` là route mới riêng biệt.
 - Sau đăng xuất → `/login` (theo action `signOut` hiện có).
 - UI **tạm thời** — đối chiếu MoMorph `i87tDx10uM` sau.
+- **F012 (as-built):** awards section đọc bảng `awards` từ Supabase qua `getAwards()` — không còn dùng `award-data.ts` tĩnh.
 
 ## Source Code References
 

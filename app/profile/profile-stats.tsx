@@ -5,7 +5,7 @@
 // Server component — no interactivity.
 
 // Aliased to avoid clashing with the exported ProfileStats component name below (M-1).
-import type { ProfileStats as ProfileStatsData } from "./profile-data";
+import type { ProfileStats as ProfileStatsData } from "@/lib/data/types";
 
 const FONT_BASE = {
   fontFamily: "Montserrat, sans-serif",

@@ -1,28 +1,37 @@
 "use client";
 
-// Recipient autocomplete over mock Sunner list.
+// Recipient autocomplete over real DB profiles list.
 // Design: 56px tall input, border #998C5F, radius 8px, white bg, placeholder "Tìm kiếm" + chevron.
 // A11y: WAI-ARIA combobox pattern (role=combobox on input), Escape closes, outside-click closes.
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { mockSunners } from "./write-kudo-mock-data";
+import type { RecipientOption } from "./write-kudo-modal";
 import { WriteKudoRecipientList } from "./write-kudo-recipient-list";
 import { BASE_FONT } from "./write-kudo-styles";
 
 interface WriteKudoRecipientProps {
+  /** Display name of the currently selected recipient (empty = none selected). */
   value: string;
-  onChange: (val: string) => void;
+  /** Called with (id, name) when a recipient is selected. */
+  onSelect: (id: string, name: string) => void;
+  /** Profiles from DB — passed from the modal. */
+  recipients: RecipientOption[];
   error?: string;
 }
 
-export function WriteKudoRecipient({ value, onChange, error }: WriteKudoRecipientProps) {
+export function WriteKudoRecipient({
+  value,
+  onSelect,
+  recipients,
+  error,
+}: WriteKudoRecipientProps) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const filtered = mockSunners.filter((s) =>
+  const filtered = recipients.filter((s) =>
     s.name.toLowerCase().includes(query.trim().toLowerCase()),
   );
 
@@ -51,19 +60,25 @@ export function WriteKudoRecipient({ value, onChange, error }: WriteKudoRecipien
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setOpen(true);
-    // Clear selection when user types again
-    if (value) onChange("");
-  }, [value, onChange]);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setQuery(e.target.value);
+      setOpen(true);
+      // Clear selection when user types again
+      if (value) onSelect("", "");
+    },
+    [value, onSelect],
+  );
 
-  const handleSelect = useCallback((name: string) => {
-    setQuery(name);
-    onChange(name);
-    setOpen(false);
-    inputRef.current?.focus();
-  }, [onChange]);
+  const handleSelect = useCallback(
+    (id: string, name: string) => {
+      setQuery(name);
+      onSelect(id, name);
+      setOpen(false);
+      inputRef.current?.focus();
+    },
+    [onSelect],
+  );
 
   function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.key === "ArrowDown" || e.key === "ArrowUp") && filtered.length > 0) {
@@ -79,8 +94,12 @@ export function WriteKudoRecipient({ value, onChange, error }: WriteKudoRecipien
       optionRefs.current[(index + 1) % filtered.length]?.focus();
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      if (index === 0) { inputRef.current?.focus(); setOpen(false); }
-      else optionRefs.current[index - 1]?.focus();
+      if (index === 0) {
+        inputRef.current?.focus();
+        setOpen(false);
+      } else {
+        optionRefs.current[index - 1]?.focus();
+      }
     }
   }
 
@@ -135,9 +154,19 @@ export function WriteKudoRecipient({ value, onChange, error }: WriteKudoRecipien
           viewBox="0 0 24 24"
           fill="none"
           aria-hidden="true"
-          style={{ transform: open ? "rotate(180deg)" : undefined, transition: "transform 150ms", flexShrink: 0 }}
+          style={{
+            transform: open ? "rotate(180deg)" : undefined,
+            transition: "transform 150ms",
+            flexShrink: 0,
+          }}
         >
-          <path d="M6 9L12 15L18 9" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M6 9L12 15L18 9"
+            stroke="#999"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </div>
 

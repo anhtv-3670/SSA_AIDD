@@ -16,3 +16,7 @@ lang: vi
 | F006 | Write Kudo modal (Viết Kudo) | UI | vi | web | high |
 | F007 | Personal Profile (Profile bản thân) | UI | vi | web | medium |
 | F008 | Countdown Prelaunch page | UI | vi | web | medium |
+| F009 | Floating Action Button (Nút nổi chức năng) | UI | vi | web | medium |
+| F010 | Thể lệ (SAA Rules) modal | UI | vi | web | medium |
+| F011 | Open Secret Box | UI | vi | web | medium |
+| F012 | Supabase Backend + Wiring | Backend | vi/en | web | high |

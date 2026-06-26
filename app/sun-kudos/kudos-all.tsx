@@ -11,8 +11,9 @@ import { useMemo } from "react";
 import { KudosSectionHeader } from "./kudos-section-header";
 import { KudosCard } from "./kudos-card";
 import { KudosSidebar } from "./kudos-sidebar";
-import type { KudosEntry } from "./kudos-data";
-import { kudosStats, giftRecipients } from "./kudos-data";
+import type { KudosEntry } from "@/lib/data/types";
+import type { KudosStats } from "./kudos-data";
+import { giftRecipients } from "./kudos-data";
 import { filterKudos } from "./kudos-filter";
 
 interface KudosAllProps {
@@ -20,9 +21,11 @@ interface KudosAllProps {
   hashtagFilter: string;
   deptFilter: string;
   query: string;
+  /** Real stats for the logged-in user from profile_stats RPC. */
+  stats: KudosStats;
 }
 
-export function KudosAll({ entries, hashtagFilter, deptFilter, query }: KudosAllProps) {
+export function KudosAll({ entries, hashtagFilter, deptFilter, query, stats }: KudosAllProps) {
   const filtered = useMemo(
     () => filterKudos(entries, { hashtag: hashtagFilter, dept: deptFilter, query }),
     [entries, hashtagFilter, deptFilter, query],
@@ -72,8 +75,8 @@ export function KudosAll({ entries, hashtagFilter, deptFilter, query }: KudosAll
           )}
         </div>
 
-        {/* Sidebar */}
-        <KudosSidebar stats={kudosStats} giftRecipients={giftRecipients} />
+        {/* Sidebar — stats from DB; gift recipients are presentational (not backed by DB this pass) */}
+        <KudosSidebar stats={stats} giftRecipients={giftRecipients} />
       </div>
     </section>
   );

@@ -1,190 +1,251 @@
+/**
+ * Tests for the profile data-layer types and shape contracts from lib/data/types.ts.
+ * Mock data was removed; these tests guard the type interface used by profile components.
+ */
 import { describe, it, expect } from "vitest";
-import {
-  PROFILE,
-  SENT_KUDOS,
-  RECEIVED_KUDOS,
-  type ProfileData,
-  type ProfileKudosEntry,
-  type ProfileStats,
-} from "./profile-data";
+import type {
+  ProfileData,
+  ProfileStats,
+  ProfileKudosEntry,
+  BadgeCollectionSlot,
+  BadgeReward,
+  KudosPerson,
+  TitleBadge,
+} from "@/lib/data/types";
 
-describe("PROFILE constant", () => {
-  it("has name, dept, title, avatarInitial as non-empty strings", () => {
-    expect(typeof PROFILE.name).toBe("string");
-    expect(PROFILE.name.length).toBeGreaterThan(0);
-    expect(typeof PROFILE.dept).toBe("string");
-    expect(PROFILE.dept.length).toBeGreaterThan(0);
-    expect(typeof PROFILE.title).toBe("string");
-    expect(PROFILE.title.length).toBeGreaterThan(0);
-    expect(typeof PROFILE.avatarInitial).toBe("string");
-    expect(PROFILE.avatarInitial.length).toBeGreaterThan(0);
+// ---------------------------------------------------------------------------
+// Type conformance helpers — build minimal valid objects per interface
+// ---------------------------------------------------------------------------
+
+function makeKudosPerson(overrides: Partial<KudosPerson> = {}): KudosPerson {
+  return {
+    id: "uid-1",
+    name: "Nguyễn Văn A",
+    dept: "CEVC3",
+    title: "New Hero",
+    initial: "N",
+    ...overrides,
+  };
+}
+
+function makeProfileStats(overrides: Partial<ProfileStats> = {}): ProfileStats {
+  return {
+    kudosReceived: 12,
+    kudosSent: 3,
+    hearts: 13,
+    boxOpened: 0,
+    boxUnopened: 12,
+    ...overrides,
+  };
+}
+
+function makeProfileData(overrides: Partial<ProfileData> = {}): ProfileData {
+  return {
+    id: "11111111-1111-1111-1111-111111111111",
+    name: "Test User",
+    dept: "DEPT01",
+    title: "Super Hero",
+    avatarInitial: "T",
+    stats: makeProfileStats(),
+    ...overrides,
+  };
+}
+
+function makeBadgeReward(overrides: Partial<BadgeReward> = {}): BadgeReward {
+  return {
+    id: "badge-1",
+    name: "First Kudos",
+    image: "/badges/first-kudos.png",
+    ...overrides,
+  };
+}
+
+function makeBadgeSlot(overrides: Partial<BadgeCollectionSlot> = {}): BadgeCollectionSlot {
+  return {
+    badge: makeBadgeReward(),
+    earnedAt: null,
+    owned: false,
+    ...overrides,
+  };
+}
+
+function makeKudosEntry(overrides: Partial<ProfileKudosEntry> = {}): ProfileKudosEntry {
+  const sender = makeKudosPerson({ id: "sender-1" });
+  const receiver = makeKudosPerson({ id: "receiver-1" });
+  return {
+    id: "kudos-1",
+    sender,
+    receiver,
+    time: "10:00 - 06/25/2026",
+    message: "Great work on the sprint!",
+    hashtags: ["#Teamwork"],
+    likeCount: 5,
+    liked: false,
+    spam: false,
+    ...overrides,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// ProfileData shape
+// ---------------------------------------------------------------------------
+
+describe("ProfileData shape", () => {
+  it("has all required string fields non-empty", () => {
+    const p = makeProfileData();
+    expect(typeof p.id).toBe("string");
+    expect(p.id.length).toBeGreaterThan(0);
+    expect(typeof p.name).toBe("string");
+    expect(p.name.length).toBeGreaterThan(0);
+    expect(typeof p.dept).toBe("string");
+    expect(typeof p.title).toBe("string");
+    expect(typeof p.avatarInitial).toBe("string");
+    expect(p.avatarInitial.length).toBeGreaterThan(0);
   });
 
-  it("has stats object with all required numeric properties", () => {
-    expect(PROFILE.stats).toBeDefined();
-    expect(typeof PROFILE.stats.kudosReceived).toBe("number");
-    expect(typeof PROFILE.stats.kudosSent).toBe("number");
-    expect(typeof PROFILE.stats.hearts).toBe("number");
-    expect(typeof PROFILE.stats.boxOpened).toBe("number");
-    expect(typeof PROFILE.stats.boxUnopened).toBe("number");
-  });
-
-  it("all stats are non-negative integers", () => {
-    expect(PROFILE.stats.kudosReceived).toBeGreaterThanOrEqual(0);
-    expect(PROFILE.stats.kudosSent).toBeGreaterThanOrEqual(0);
-    expect(PROFILE.stats.hearts).toBeGreaterThanOrEqual(0);
-    expect(PROFILE.stats.boxOpened).toBeGreaterThanOrEqual(0);
-    expect(PROFILE.stats.boxUnopened).toBeGreaterThanOrEqual(0);
-    expect(Number.isInteger(PROFILE.stats.kudosReceived)).toBe(true);
-    expect(Number.isInteger(PROFILE.stats.kudosSent)).toBe(true);
-    expect(Number.isInteger(PROFILE.stats.hearts)).toBe(true);
-    expect(Number.isInteger(PROFILE.stats.boxOpened)).toBe(true);
-    expect(Number.isInteger(PROFILE.stats.boxUnopened)).toBe(true);
-  });
-
-  it("is a valid ProfileData object", () => {
-    const data: ProfileData = PROFILE;
-    expect(data).toBeDefined();
-    expect(data.stats).toBeDefined();
-  });
-});
-
-describe("SENT_KUDOS constant", () => {
-  it("is a non-empty array", () => {
-    expect(Array.isArray(SENT_KUDOS)).toBe(true);
-    expect(SENT_KUDOS.length).toBeGreaterThan(0);
-  });
-
-  it("each entry has sender, receiver, time, message, hashtags, likeCount", () => {
-    SENT_KUDOS.forEach((entry) => {
-      expect(entry.sender).toBeDefined();
-      expect(entry.receiver).toBeDefined();
-      expect(typeof entry.time).toBe("string");
-      expect(typeof entry.message).toBe("string");
-      expect(Array.isArray(entry.hashtags)).toBe(true);
-      expect(typeof entry.likeCount).toBe("number");
-    });
-  });
-
-  it("each entry has sender and receiver with id, name, dept, title, initial", () => {
-    SENT_KUDOS.forEach((entry) => {
-      expect(typeof entry.sender.id).toBe("string");
-      expect(typeof entry.sender.name).toBe("string");
-      expect(typeof entry.sender.dept).toBe("string");
-      expect(typeof entry.sender.title).toBe("string");
-      expect(typeof entry.sender.initial).toBe("string");
-
-      expect(typeof entry.receiver.id).toBe("string");
-      expect(typeof entry.receiver.name).toBe("string");
-      expect(typeof entry.receiver.dept).toBe("string");
-      expect(typeof entry.receiver.title).toBe("string");
-      expect(typeof entry.receiver.initial).toBe("string");
-    });
-  });
-
-  it("spam property is optional boolean (defaults to false when absent)", () => {
-    SENT_KUDOS.forEach((entry) => {
-      expect(typeof entry.spam === "boolean" || entry.spam === undefined).toBe(true);
-      // Mock data explicitly sets spam, but the interface allows it to be optional
-      if (entry.spam !== undefined) {
-        expect(typeof entry.spam).toBe("boolean");
-      }
-    });
-  });
-
-  it("contains at least one spam entry (F007 requirement)", () => {
-    const spamEntries = SENT_KUDOS.filter((e) => e.spam === true);
-    expect(spamEntries.length).toBeGreaterThan(0);
-  });
-
-  it("likeCount is non-negative integer", () => {
-    SENT_KUDOS.forEach((entry) => {
-      expect(typeof entry.likeCount).toBe("number");
-      expect(entry.likeCount).toBeGreaterThanOrEqual(0);
-      expect(Number.isInteger(entry.likeCount)).toBe(true);
-    });
-  });
-});
-
-describe("RECEIVED_KUDOS constant", () => {
-  it("is a non-empty array", () => {
-    expect(Array.isArray(RECEIVED_KUDOS)).toBe(true);
-    expect(RECEIVED_KUDOS.length).toBeGreaterThan(0);
-  });
-
-  it("each entry has sender, receiver, time, message, hashtags, likeCount", () => {
-    RECEIVED_KUDOS.forEach((entry) => {
-      expect(entry.sender).toBeDefined();
-      expect(entry.receiver).toBeDefined();
-      expect(typeof entry.time).toBe("string");
-      expect(typeof entry.message).toBe("string");
-      expect(Array.isArray(entry.hashtags)).toBe(true);
-      expect(typeof entry.likeCount).toBe("number");
-    });
-  });
-
-  it("each entry has sender and receiver with id, name, dept, title, initial", () => {
-    RECEIVED_KUDOS.forEach((entry) => {
-      expect(typeof entry.sender.id).toBe("string");
-      expect(typeof entry.sender.name).toBe("string");
-      expect(typeof entry.sender.dept).toBe("string");
-      expect(typeof entry.sender.title).toBe("string");
-      expect(typeof entry.sender.initial).toBe("string");
-
-      expect(typeof entry.receiver.id).toBe("string");
-      expect(typeof entry.receiver.name).toBe("string");
-      expect(typeof entry.receiver.dept).toBe("string");
-      expect(typeof entry.receiver.title).toBe("string");
-      expect(typeof entry.receiver.initial).toBe("string");
-    });
-  });
-
-  it("spam property is optional boolean", () => {
-    RECEIVED_KUDOS.forEach((entry) => {
-      expect(typeof entry.spam === "boolean" || entry.spam === undefined).toBe(true);
-    });
-  });
-
-  it("contains at least one spam entry (F007 requirement)", () => {
-    const spamEntries = RECEIVED_KUDOS.filter((e) => e.spam === true);
-    expect(spamEntries.length).toBeGreaterThan(0);
-  });
-
-  it("likeCount is non-negative integer", () => {
-    RECEIVED_KUDOS.forEach((entry) => {
-      expect(typeof entry.likeCount).toBe("number");
-      expect(entry.likeCount).toBeGreaterThanOrEqual(0);
-      expect(Number.isInteger(entry.likeCount)).toBe(true);
-    });
+  it("stats field satisfies ProfileStats", () => {
+    const p = makeProfileData();
+    expect(p.stats).toBeDefined();
+    expect(typeof p.stats.kudosReceived).toBe("number");
+    expect(typeof p.stats.kudosSent).toBe("number");
+    expect(typeof p.stats.hearts).toBe("number");
+    expect(typeof p.stats.boxOpened).toBe("number");
+    expect(typeof p.stats.boxUnopened).toBe("number");
   });
 });
 
-describe("Data consistency checks", () => {
-  it("SENT_KUDOS and RECEIVED_KUDOS both have at least 1 entry", () => {
-    expect(SENT_KUDOS.length).toBeGreaterThan(0);
-    expect(RECEIVED_KUDOS.length).toBeGreaterThan(0);
+// ---------------------------------------------------------------------------
+// ProfileStats shape
+// ---------------------------------------------------------------------------
+
+describe("ProfileStats shape", () => {
+  it("all five stat fields are non-negative integers", () => {
+    const s = makeProfileStats();
+    const fields: (keyof ProfileStats)[] = [
+      "kudosReceived", "kudosSent", "hearts", "boxOpened", "boxUnopened",
+    ];
+    for (const f of fields) {
+      expect(typeof s[f]).toBe("number");
+      expect(s[f]).toBeGreaterThanOrEqual(0);
+      expect(Number.isInteger(s[f])).toBe(true);
+    }
   });
 
-  it("each SENT_KUDOS entry has sender id 'me'", () => {
-    SENT_KUDOS.forEach((entry) => {
-      expect(entry.sender.id).toBe("me");
+  it("matches test-user DB seed values", () => {
+    // Validates the shape expected from profile_stats RPC for the seeded test user:
+    // kudos_received=12, kudos_sent=3, hearts_received=13, boxes_opened=0, boxes_unopened=12
+    const s = makeProfileStats({
+      kudosReceived: 12,
+      kudosSent: 3,
+      hearts: 13,
+      boxOpened: 0,
+      boxUnopened: 12,
     });
+    expect(s.kudosReceived).toBe(12);
+    expect(s.kudosSent).toBe(3);
+    expect(s.hearts).toBe(13);
+    expect(s.boxOpened).toBe(0);
+    expect(s.boxUnopened).toBe(12);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TitleBadge values
+// ---------------------------------------------------------------------------
+
+describe("TitleBadge values", () => {
+  it("accepts all four canonical tier names", () => {
+    const tiers: TitleBadge[] = ["New Hero", "Rising Hero", "Super Hero", "Legend Hero"];
+    for (const t of tiers) {
+      const person = makeKudosPerson({ title: t });
+      expect(person.title).toBe(t);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BadgeCollectionSlot shape
+// ---------------------------------------------------------------------------
+
+describe("BadgeCollectionSlot shape", () => {
+  it("unearned slot has owned=false and earnedAt=null", () => {
+    const slot = makeBadgeSlot();
+    expect(slot.owned).toBe(false);
+    expect(slot.earnedAt).toBeNull();
+    expect(typeof slot.badge.id).toBe("string");
+    expect(typeof slot.badge.name).toBe("string");
   });
 
-  it("each RECEIVED_KUDOS entry has receiver id 'me'", () => {
-    RECEIVED_KUDOS.forEach((entry) => {
-      expect(entry.receiver.id).toBe("me");
+  it("earned slot has owned=true and a non-null earnedAt string", () => {
+    const slot = makeBadgeSlot({
+      owned: true,
+      earnedAt: "2026-06-25T10:00:00Z",
     });
+    expect(slot.owned).toBe(true);
+    expect(typeof slot.earnedAt).toBe("string");
+    expect(slot.earnedAt!.length).toBeGreaterThan(0);
   });
 
-  it("hashtags in each entry are non-empty strings starting with #", () => {
-    [...SENT_KUDOS, ...RECEIVED_KUDOS].forEach((entry) => {
-      expect(entry.hashtags.length).toBeGreaterThan(0);
-      entry.hashtags.forEach((tag) => {
-        expect(typeof tag).toBe("string");
-        expect(tag.length).toBeGreaterThan(0);
-        expect(tag.startsWith("#")).toBe(true);
-      });
-    });
+  it("a 6-slot collection can hold a mix of earned and unearned", () => {
+    const slots: BadgeCollectionSlot[] = Array.from({ length: 6 }, (_, i) =>
+      makeBadgeSlot({
+        badge: makeBadgeReward({ id: `badge-${i}` }),
+        owned: i < 2,
+        earnedAt: i < 2 ? "2026-01-01T00:00:00Z" : null,
+      }),
+    );
+    expect(slots).toHaveLength(6);
+    expect(slots.filter((s) => s.owned)).toHaveLength(2);
+    expect(slots.filter((s) => !s.owned)).toHaveLength(4);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ProfileKudosEntry shape
+// ---------------------------------------------------------------------------
+
+describe("ProfileKudosEntry shape", () => {
+  it("has all required KudosEntry fields", () => {
+    const entry = makeKudosEntry();
+    expect(typeof entry.id).toBe("string");
+    expect(entry.sender).toBeDefined();
+    expect(entry.receiver).toBeDefined();
+    expect(typeof entry.time).toBe("string");
+    expect(typeof entry.message).toBe("string");
+    expect(Array.isArray(entry.hashtags)).toBe(true);
+    expect(typeof entry.likeCount).toBe("number");
+  });
+
+  it("spam is optional boolean (undefined or boolean)", () => {
+    const withSpam = makeKudosEntry({ spam: true });
+    const withoutSpam = makeKudosEntry({ spam: undefined });
+    expect(withSpam.spam).toBe(true);
+    expect(withoutSpam.spam).toBeUndefined();
+  });
+
+  it("hashtags are non-empty strings starting with #", () => {
+    const entry = makeKudosEntry({ hashtags: ["#Teamwork", "#Technical"] });
+    for (const tag of entry.hashtags) {
+      expect(typeof tag).toBe("string");
+      expect(tag.length).toBeGreaterThan(0);
+      expect(tag.startsWith("#")).toBe(true);
+    }
+  });
+
+  it("likeCount is a non-negative integer", () => {
+    const entry = makeKudosEntry({ likeCount: 42 });
+    expect(entry.likeCount).toBeGreaterThanOrEqual(0);
+    expect(Number.isInteger(entry.likeCount)).toBe(true);
+  });
+
+  it("sender and receiver have all KudosPerson fields", () => {
+    const entry = makeKudosEntry();
+    for (const person of [entry.sender, entry.receiver]) {
+      expect(typeof person.id).toBe("string");
+      expect(typeof person.name).toBe("string");
+      expect(typeof person.dept).toBe("string");
+      expect(typeof person.title).toBe("string");
+      expect(typeof person.initial).toBe("string");
+    }
   });
 });

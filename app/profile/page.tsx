@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/get-locale";
+import { getProfile } from "@/lib/data/profile-queries";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { WriteKudoFab } from "@/components/write-kudo-fab";
 import { ProfileHero } from "./profile-hero";
 import { ProfileStats } from "./profile-stats";
 import { ProfileKudosFeed } from "./profile-kudos-feed";
-import { PROFILE, SENT_KUDOS, RECEIVED_KUDOS } from "./profile-data";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -25,7 +26,10 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  const locale = await getLocale();
+  const [locale, profile] = await Promise.all([
+    getLocale(),
+    getProfile(supabase),
+  ]);
 
   return (
     <div style={{ backgroundColor: "#00101A", minHeight: "100vh" }}>
@@ -37,7 +41,11 @@ export default async function ProfilePage() {
       />
 
       {/* Hero — full-bleed, sits under fixed header */}
-      <ProfileHero profile={PROFILE} />
+      <ProfileHero
+        profile={profile}
+        heroTierName={profile.heroTierName}
+        badgeCollection={profile.badgeCollection}
+      />
 
       <main
         id="main-content"
@@ -52,16 +60,19 @@ export default async function ProfilePage() {
         }}
       >
         {/* Section B — Stats box */}
-        <ProfileStats stats={PROFILE.stats} />
+        <ProfileStats stats={profile.stats} />
 
         {/* Sections C + D — KUDOS header + sent/received feed */}
         <ProfileKudosFeed
-          sentKudos={SENT_KUDOS}
-          receivedKudos={RECEIVED_KUDOS}
+          sentKudos={profile.sentKudos}
+          receivedKudos={profile.receivedKudos}
         />
       </main>
 
       <SiteFooter />
+
+      {/* F009 FAB — fixed bottom-right, shown on all authenticated pages */}
+      <WriteKudoFab />
     </div>
   );
 }

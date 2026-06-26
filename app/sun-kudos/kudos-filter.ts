@@ -1,7 +1,7 @@
 // Pure kudos filtering — shared by KudosClientShell (highlight) and KudosAll (feed)
 // so the two lists always filter identically (DRY). No React here → unit-testable.
 
-import type { KudosEntry } from "./kudos-data";
+import type { KudosEntry } from "@/lib/data/types";
 
 export interface KudosFilters {
   /** Exact hashtag match (case-insensitive), e.g. "#Dedicated". Empty = no hashtag filter. */

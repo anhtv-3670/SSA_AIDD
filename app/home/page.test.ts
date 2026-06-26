@@ -33,6 +33,24 @@ const mockCreateClient = vi.mocked(createClient);
 
 type SupabaseClientMock = Awaited<ReturnType<typeof createClient>>;
 
+/**
+ * Builds a stub Supabase client with the given authed user.
+ * Stubs both `auth.getUser` and the `from(...).select(...).order(...)` chain
+ * used by the awards query the home page now performs (getAwards).
+ */
+function makeClient(user: { id: string; email: string } | null): SupabaseClientMock {
+  return {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user } }),
+    },
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      })),
+    })),
+  } as unknown as SupabaseClientMock;
+}
+
 describe("HomePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,13 +62,7 @@ describe("HomePage", () => {
 
   describe("auth guard", () => {
     it("redirects to /login when user is null", async () => {
-      mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: null },
-          }),
-        },
-      } as unknown as SupabaseClientMock);
+      mockCreateClient.mockResolvedValue(makeClient(null));
 
       mockRedirect.mockImplementation(() => {
         throw new Error("REDIRECT_SENTINEL");
@@ -68,15 +80,9 @@ describe("HomePage", () => {
     });
 
     it("renders greeting with user email when authenticated", async () => {
-      const mockGetUser = vi.fn().mockResolvedValue({
-        data: { user: { id: "u1", email: "alice@example.com" } },
-      });
-
-      mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: mockGetUser,
-        },
-      } as unknown as SupabaseClientMock);
+      mockCreateClient.mockResolvedValue(
+        makeClient({ id: "u1", email: "alice@example.com" }),
+      );
 
       const result = await HomePage();
 
@@ -88,31 +94,18 @@ describe("HomePage", () => {
     });
 
     it("calls getUser on the Supabase client", async () => {
-      const mockGetUser = vi.fn().mockResolvedValue({
-        data: { user: { id: "u2", email: "bob@example.com" } },
-      });
-
-      mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: mockGetUser,
-        },
-      } as unknown as SupabaseClientMock);
+      const client = makeClient({ id: "u2", email: "bob@example.com" });
+      mockCreateClient.mockResolvedValue(client);
 
       await HomePage();
 
-      expect(mockGetUser).toHaveBeenCalled();
+      expect(client.auth.getUser).toHaveBeenCalled();
     });
 
     it("calls createClient to initialize Supabase", async () => {
-      const mockGetUser = vi.fn().mockResolvedValue({
-        data: { user: { id: "u3", email: "charlie@example.com" } },
-      });
-
-      mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: mockGetUser,
-        },
-      } as unknown as SupabaseClientMock);
+      mockCreateClient.mockResolvedValue(
+        makeClient({ id: "u3", email: "charlie@example.com" }),
+      );
 
       await HomePage();
 
@@ -120,13 +113,9 @@ describe("HomePage", () => {
     });
 
     it("does not redirect when user exists with email", async () => {
-      mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: { id: "u4", email: "dave@example.com" } },
-          }),
-        },
-      } as unknown as SupabaseClientMock);
+      mockCreateClient.mockResolvedValue(
+        makeClient({ id: "u4", email: "dave@example.com" }),
+      );
 
       const result = await HomePage();
 

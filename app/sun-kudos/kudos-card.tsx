@@ -3,15 +3,16 @@
 // Authoritative: B.3_KUDO - Highlight (2940:13464)
 // Card: bg #FFF8E1, border 4px solid #FFEA9E, radius 16px, padding 24px 24px 16px 24px, col gap 16px
 // Time: Montserrat 700 16px #999 letterSpacing 0.5px
-// Title label: 16px #00101A center (e.g. "IDOL GIỚI TRẺ")
+// Title label: 16px #00101A center (e.g. "Legend Hero")
 // Message box: bg rgba(255,234,158,0.40) border 1px #FFEA9E radius 12px
 // Message text: 20px #00101A lineHeight 32px — 3 lines max (highlight) / 5 lines (feed)
 // Hashtags: 16px #D4271D single line ellipsis
 // Action: like count+heart left; Copy Link + Xem chi tiết right
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useTransition } from "react";
 import type { CSSProperties } from "react";
-import type { KudosEntry } from "./kudos-data";
+import type { KudosEntry } from "@/lib/data/types";
+import { likeKudo, unlikeKudo } from "./kudos-actions";
 import { PersonBlock } from "./kudos-person-block";
 
 interface KudosCardProps {
@@ -40,9 +41,11 @@ const FONT_BASE: CSSProperties = {
 };
 
 export function KudosCard({ entry, variant = "highlight", fullWidth, spam = false }: KudosCardProps) {
-  const [liked, setLiked] = useState(false);
+  // Seed from the DB-provided liked flag; optimistic updates applied locally until revalidation.
+  const [liked, setLiked] = useState(entry.liked ?? false);
   const [likeCount, setLikeCount] = useState(entry.likeCount);
   const [toastVisible, setToastVisible] = useState(false);
+  const [isPending, startTransition] = useTransition();
   // H-2: keep the toast timer so we can cancel it if the card unmounts (e.g. filtered out)
   // before it fires — avoids setState-on-unmounted-component.
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -55,12 +58,25 @@ export function KudosCard({ entry, variant = "highlight", fullWidth, spam = fals
   );
 
   const handleLike = useCallback(() => {
-    setLiked((prev) => {
-      const next = !prev;
-      setLikeCount((c) => (next ? c + 1 : c - 1));
-      return next;
+    if (isPending) return;
+    const next = !liked;
+    // Optimistic update
+    setLiked(next);
+    setLikeCount((c) => (next ? c + 1 : c - 1));
+    startTransition(async () => {
+      try {
+        if (next) {
+          await likeKudo(entry.id);
+        } else {
+          await unlikeKudo(entry.id);
+        }
+      } catch {
+        // Roll back optimistic update on error
+        setLiked(!next);
+        setLikeCount((c) => (next ? c - 1 : c + 1));
+      }
     });
-  }, []);
+  }, [entry.id, liked, isPending]);
 
   const handleCopyLink = useCallback(() => {
     // EC-8: clipboard may be unavailable; toast shows regardless
@@ -159,7 +175,8 @@ export function KudosCard({ entry, variant = "highlight", fullWidth, spam = fals
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "24px" }}>
         {/* Like */}
         <button type="button" onClick={handleLike} aria-label={liked ? "Unlike" : "Like"}
-          style={{ display: "flex", alignItems: "center", gap: "4px", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
+          disabled={isPending}
+          style={{ display: "flex", alignItems: "center", gap: "4px", background: "transparent", border: "none", cursor: isPending ? "wait" : "pointer", padding: 0, opacity: isPending ? 0.7 : 1 }}>
           <span style={{ ...FONT_BASE, fontSize: "24px", lineHeight: "32px", color: "#00101A" }}>
             {likeCount.toLocaleString("vi-VN")}
           </span>

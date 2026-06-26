@@ -3,7 +3,7 @@
 ## Kiến trúc
 - Route `app/sun-kudos/page.tsx` (Server Component): auth guard (mirror `app/home/page.tsx` — `createClient()` → `getUser()` → redirect `/login`), read locale via `getLocale()`, render `<SiteHeader active="kudos" locale={locale}/>` + sections + `<SiteFooter/>`. Dark base `#00101A`.
 - Sections as components under `app/sun-kudos/`. Client Components only where interaction needed (`"use client"`), rest server/presentational. Keep each file < 200 lines (split aggressively).
-- Mock data: `app/sun-kudos/kudos-data.ts` — typed arrays (highlightKudos, allKudos, spotlightNames, tickerEntries, stats, giftRecipients, hashtags, departments). Content trích từ design (tên, message, hashtags #Dedicated #Inspiring, "388 KUDOS", stats 25, danh hiệu New/Rising/Legend Hero, "IDOL GIỚI TRẺ", "Nhận được 1 áo phông SAA"). Không bịa quá mức — đủ để minh hoạ.
+- Mock data: `app/sun-kudos/kudos-data.ts` — stripped sau F012; chỉ còn decorative constants (spotlightNames, tickerEntries) + deprecated stubs test-only. **F012 (as-built):** feed, highlight, stats, hashtags, departments đọc từ Supabase qua `lib/data/*`. Tier vocabulary (as-built): New Hero / Rising Hero / Super Hero / Legend Hero — "IDOL GIỚI TRẺ" đã xoá khỏi code và types.
 
 ## Components (as-built)
 | Vai trò | File | Client? |

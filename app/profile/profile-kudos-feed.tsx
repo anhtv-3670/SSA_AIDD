@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { KudosCard } from "@/app/sun-kudos/kudos-card";
-import type { ProfileKudosEntry } from "./profile-data";
+import type { ProfileKudosEntry } from "@/lib/data/types";
 
 type FeedMode = "sent" | "received";
 

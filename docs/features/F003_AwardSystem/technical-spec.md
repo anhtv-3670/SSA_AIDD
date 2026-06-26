@@ -49,7 +49,7 @@ None.
 
 - BR-1: Kiểm tra phiên bằng `supabase.auth.getUser()` (xác thực server), KHÔNG dùng `getSession()` cho quyết định bảo vệ.
 - BR-2: Chốt bảo vệ đặt ở cấp trang (`app/he-thong-giai/page.tsx`), không dồn vào layout.
-- BR-3: Nội dung giải thưởng là tĩnh (hardcode trong `award-data.ts`) — specs không có databaseTable/Column.
+- BR-3: **F012 (as-built):** Nội dung giải thưởng đọc từ bảng `awards` (Supabase) qua `getAwards()` — `award-data.ts` không còn là nguồn runtime; các giá trị được seed vào DB từ data gốc `award-data.ts`.
 
 ### Decision Logic
 

@@ -3,12 +3,14 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/get-locale";
+import { getAwards } from "@/lib/data/awards-queries";
 import { SiteHeader } from "@/components/site-header";
 import { HomeHero } from "./home-hero";
 import { HomeAbout } from "./home-about";
 import { HomeAwards } from "./home-awards";
 import { SunKudosBanner } from "@/components/sun-kudos-banner";
 import { SiteFooter } from "@/components/site-footer";
+import { WriteKudoFab } from "@/components/write-kudo-fab";
 
 export const metadata: Metadata = {
   title: "Trang chủ",
@@ -26,6 +28,9 @@ export default async function HomePage() {
   }
 
   const locale = await getLocale();
+
+  // Fetch awards from DB (read-only catalog, SELECT policy using(true))
+  const awards = await getAwards(supabase);
 
   return (
     // Dark base: #00101A from Cover gradient start — authoritative
@@ -53,7 +58,7 @@ export default async function HomePage() {
         <HomeAbout />
 
         {/* Awards grid — Hệ thống giải thưởng */}
-        <HomeAwards />
+        <HomeAwards awards={awards} />
 
         {/* Sun* Kudos promo panel */}
         <SunKudosBanner />
@@ -61,6 +66,9 @@ export default async function HomePage() {
 
       {/* Footer */}
       <SiteFooter />
+
+      {/* F009 FAB — fixed bottom-right, shown on all authenticated pages */}
+      <WriteKudoFab />
     </div>
   );
 }
