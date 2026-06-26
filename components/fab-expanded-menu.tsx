@@ -8,9 +8,10 @@
 // Animation: fade + slide-up 180ms; respects prefers-reduced-motion.
 
 import Image from "next/image";
-import { type RefObject } from "react";
+import { type RefObject, useState } from "react";
 
 import { PenIcon } from "@/components/icons/pen-icon";
+import { fabItemVisibility } from "@/components/fab-item-visibility";
 
 interface FabExpandedMenuProps {
   onWrite: () => void;
@@ -48,13 +49,20 @@ const goldButtonBase: React.CSSProperties = {
 };
 
 export function FabExpandedMenu({ onWrite, onClose, onThele, open, cancelRef }: FabExpandedMenuProps) {
-  // Animation CSS lives in app/globals.css (.fab-menu-item / .fab-menu-open)
-  // so Next.js extracts it statically instead of re-emitting it each render.
+  // Show/hide is driven INLINE from `open` (see fab-item-visibility) — NOT a global
+  // CSS class — so it can't desync from a stale Turbopack globals chunk (bug 260626).
+  // Read prefers-reduced-motion synchronously (lazy initialiser — no setState in effect).
+  const [reducedMotion] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
+  const visibility = fabItemVisibility(open, reducedMotion);
+
   return (
     <>
       {/*
         Container: 214×224, flex-col, align-end, gap 20px.
-        Rendered as inert/hidden when closed (pointer-events off via CSS, aria-hidden).
+        Items inert/hidden when closed (inline opacity 0 + pointer-events none, aria-hidden).
       */}
       <div
         id="fab-speed-dial"
@@ -73,8 +81,8 @@ export function FabExpandedMenu({ onWrite, onClose, onThele, open, cancelRef }: 
           aria-label="Thể lệ"
           tabIndex={open ? 0 : -1}
           onClick={() => { onThele(); onClose(); }}
-          className={`fab-menu-item${open ? " fab-menu-open" : ""} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00101A]`}
-          style={{ ...goldButtonBase, width: "149px", cursor: "pointer" }}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00101A]"
+          style={{ ...goldButtonBase, ...visibility, width: "149px", cursor: "pointer" }}
         >
           <Image
             src="/saa-2025/logo-sun.png"
@@ -93,8 +101,8 @@ export function FabExpandedMenu({ onWrite, onClose, onThele, open, cancelRef }: 
           aria-label="Viết KUDOS"
           tabIndex={open ? 0 : -1}
           onClick={() => { onWrite(); onClose(); }}
-          className={`fab-menu-item${open ? " fab-menu-open" : ""} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00101A]`}
-          style={{ ...goldButtonBase, width: "214px" }}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00101A]"
+          style={{ ...goldButtonBase, ...visibility, width: "214px" }}
         >
           <PenIcon />
           <span style={labelStyle}>Viết KUDOS</span>
@@ -107,7 +115,7 @@ export function FabExpandedMenu({ onWrite, onClose, onThele, open, cancelRef }: 
           aria-label="Đóng"
           tabIndex={open ? 0 : -1}
           onClick={onClose}
-          className={`fab-menu-item${open ? " fab-menu-open" : ""} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white`}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           style={{
             display: "flex",
             alignItems: "center",
@@ -119,6 +127,7 @@ export function FabExpandedMenu({ onWrite, onClose, onThele, open, cancelRef }: 
             border: "none",
             cursor: "pointer",
             flexShrink: 0,
+            ...visibility,
           }}
         >
           {/* × icon — white 24×24 */}

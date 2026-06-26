@@ -13,5 +13,5 @@
 | EC-9 | Trang /login, /prelaunch | KHÔNG hiển thị FAB |
 | EC-10 | Keyboard — speed-dial đóng | Các nút menu có `tabIndex=-1`; không trong tab order |
 | EC-11 | Keyboard — speed-dial mở | Nút Hủy focus ngay khi mở; Tab đi qua Thể lệ / Viết KUDOS; `focus-visible` ring 2px dark trên nền vàng / white trên nền đỏ (WCAG 2.4.7) |
-| EC-12 | `prefers-reduced-motion: reduce` | Animation `.fab-menu-item` transition: none — menu vẫn hiện/ẩn nhưng không slide/fade |
+| EC-12 | `prefers-reduced-motion: reduce` | `fabItemVisibility` trả `transition: none` qua inline style — menu vẫn hiện/ẩn nhưng không slide/fade |
 | EC-13 | Đóng modal qua FAB-mở | Trở lại trang, FAB vẫn hiển thị; focus trả về hợp lý (modal F006 đã xử lý focus return) |

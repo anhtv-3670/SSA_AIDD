@@ -35,21 +35,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* F009 FAB speed-dial — fade + slide-up for expanded menu items.
-   Moved out of the component render so Next.js extracts it statically. */
-.fab-menu-item {
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 180ms ease, transform 180ms ease;
-  pointer-events: none;
-}
-.fab-menu-item.fab-menu-open {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-@media (prefers-reduced-motion: reduce) {
-  .fab-menu-item {
-    transition: none;
-  }
-}
+/* F009 FAB speed-dial show/hide is driven INLINE from component state
+   (see components/fab-item-visibility.ts) — deliberately NOT a global class,
+   so it can't desync from a stale Turbopack globals chunk (bug 260626). */

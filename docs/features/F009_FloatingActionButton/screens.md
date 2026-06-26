@@ -28,7 +28,7 @@ Các nút có `tabIndex={open ? 0 : -1}` — không tabbable khi menu đóng.
 - Escape + click ngoài vùng FAB → đóng menu, focus trả về pill.
 - B ("Viết KUDOS") → WriteKudoModal mở (trên /sun-kudos reuse modal của compose bar; trang khác dùng modal của WriteKudoFab) rồi menu tự đóng. Đóng modal: như F006.
 - A ("Thể lệ"): mở F010 modal, menu đóng.
-- Animation: fade + slide-up 180ms (`.fab-menu-item` / `.fab-menu-open` trong `app/globals.css`); `prefers-reduced-motion: reduce` → `transition: none`.
+- Animation: fade + slide-up 180ms via inline style từ `fabItemVisibility(open, reducedMotion)` (`components/fab-item-visibility.ts`); `prefers-reduced-motion: reduce` → `transition: none`.
 - FAB luôn nổi khi cuộn; không che modal (z thấp hơn overlay).
 
 ## User Journey
